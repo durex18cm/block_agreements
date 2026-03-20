@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>隐私政策 / Privacy Policy — Miko Blocks</title>
+  <style>
+    :root {
+      --accent:   #5c6bc0;
+      --accent-light: #e8eaf6;
+      --text:     #1a1a2e;
+      --muted:    #6b7280;
+      --border:   #e0e0e0;
+      --bg:       #f8f9fc;
+      --card:     #ffffff;
+      --radius:   12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 16px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #3949ab 0%, #5c6bc0 100%);
+      color: #fff;
+      padding: 56px 24px 40px;
+      text-align: center;
+    }
+    header .app-icon {
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 20px;
+    }
+    header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+    header .subtitle { margin-top: 8px; font-size: 1rem; opacity: .8; }
+
+    /* ── Language switcher ── */
+    .lang-bar {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 18px 24px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    }
+    .lang-btn {
+      padding: 6px 22px;
+      border-radius: 999px;
+      border: 2px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .lang-btn.active,
+    .lang-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .effective-date {
+      text-align: center;
+      color: var(--muted);
+      font-size: .875rem;
+      margin-bottom: 36px;
+    }
+
+    /* ── Cards ── */
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .section-card h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--accent-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-card h2 .icon {
+      width: 28px; height: 28px;
+      background: var(--accent-light);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .section-card p { margin-bottom: 12px; color: var(--text); }
+    .section-card p:last-child { margin-bottom: 0; }
+    .section-card ul {
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+    .section-card ul li { margin-bottom: 6px; }
+
+    /* Highlight box */
+    .highlight {
+      background: var(--accent-light);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      color: #3949ab;
+      font-weight: 500;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: .825rem;
+      padding: 32px 24px;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── i18n visibility ── */
+    [data-lang] { display: none; }
+    body.lang-zh [data-lang="zh"] { display: block; }
+    body.lang-en [data-lang="en"] { display: block; }
+
+    /* inline bilingual spans */
+    body.lang-zh .txt-en { display: none; }
+    body.lang-en .txt-zh { display: none; }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.5rem; }
+      .section-card { padding: 22px 18px; }
+    }
+  </style>
+</head>
+<body class="lang-zh">
+
+<header>
+  <div class="app-icon">🧩</div>
+  <h1>
+    <span class="txt-zh">隐私政策</span>
+    <span class="txt-en">Privacy Policy</span>
+  </h1>
+  <p class="subtitle">Miko Blocks · 颜爆方块</p>
+</header>
+
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="setLang('zh')">中文</button>
+  <button class="lang-btn"        onclick="setLang('en')">English</button>
+</div>
+
+<main>
+
+  <!-- ══ CHINESE ══ -->
+  <div data-lang="zh">
+    <p class="effective-date">生效日期：2025 年 1 月 1 日 &nbsp;|&nbsp; 最后更新：2025 年 1 月 1 日</p>
+
+    <div class="section-card">
+      <div class="highlight">
+        Miko Blocks（颜爆方块）承诺：<strong>我们不收集任何个人信息，不联网，不追踪用户。</strong>所有数据仅保存在您的设备上。
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📋</span>概述</h2>
+      <p>本隐私政策说明了 Miko Blocks（以下简称"本应用"）在您使用过程中如何处理您的信息。本应用由个人开发者开发，不附属于任何大型企业或第三方平台。</p>
+      <p>本应用是一款本地运行的方块益智游戏，<strong>无需网络连接即可完整使用</strong>。</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🚫</span>我们不收集的信息</h2>
+      <p>本应用<strong>不会</strong>收集以下任何信息：</p>
+      <ul>
+        <li>姓名、邮箱、手机号等个人身份信息</li>
+        <li>位置信息（GPS 或网络位置）</li>
+        <li>设备标识符（IDFA、广告 ID 等）</li>
+        <li>使用行为数据、崩溃日志或分析数据</li>
+        <li>相机或麦克风数据</li>
+        <li>联系人、日历等敏感权限数据</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">💾</span>本地存储的数据</h2>
+      <p>本应用仅在您的设备本地存储以下信息，用于保存您的游戏偏好与进度：</p>
+      <ul>
+        <li><strong>最高分</strong>：您的历史最高游戏分数</li>
+        <li><strong>音效设置</strong>：音效开关状态</li>
+        <li><strong>震动设置</strong>：触感反馈开关状态</li>
+        <li><strong>方块样式</strong>：您选择的方块外观主题</li>
+        <li><strong>自定义图片路径</strong>：您选择的本地图片文件路径（如已设置）</li>
+        <li><strong>语言偏好</strong>：您选择的界面显示语言</li>
+      </ul>
+      <p>以上所有数据均<strong>仅存储在您的设备上</strong>，不会被上传至任何服务器或与任何第三方共享。</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📷</span>相册权限</h2>
+      <p>当您使用"自定义方块图片"功能时，本应用会请求访问您的相册权限。此权限<strong>仅用于</strong>让您选择本地图片作为方块背景。</p>
+      <p>我们不会读取、存储或上传您相册中的任何其他图片或数据。您可以随时在系统设置中撤销此权限，撤销后自定义图片功能将不可用，但不影响其他游戏功能。</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🌐</span>网络访问</h2>
+      <p>本应用<strong>不发起任何网络请求</strong>，不连接任何服务器，不包含任何广告 SDK、分析 SDK 或第三方追踪代码。游戏可在完全离线状态下正常使用。</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">👶</span>儿童隐私</h2>
+      <p>由于本应用不收集任何个人信息，也无需账户注册，因此适合所有年龄段用户使用，包括 13 岁以下儿童。我们不会故意收集儿童的任何个人信息。</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🔄</span>政策更新</h2>
+      <p>如我们对本隐私政策进行重大更改，将通过更新本页面上的"生效日期"来通知您。建议您定期查看本政策以了解最新信息。</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📬</span>联系我们</h2>
+      <p>如您对本隐私政策有任何疑问，欢迎通过以下方式联系我们：</p>
+      <ul>
+        <li>邮箱：fastable#proton.me（发送时请将 # 替换为 @）</li>
+      </ul>
+    </div>
+  </div><!-- /zh -->
+
+  <!-- ══ ENGLISH ══ -->
+  <div data-lang="en">
+    <p class="effective-date">Effective Date: January 1, 2025 &nbsp;|&nbsp; Last Updated: January 1, 2025</p>
+
+    <div class="section-card">
+      <div class="highlight">
+        Miko Blocks is committed to your privacy: <strong>we collect no personal information, make no network requests, and track nothing.</strong> All data stays on your device.
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📋</span>Overview</h2>
+      <p>This Privacy Policy describes how Miko Blocks (the "App") handles information when you use it. The App is developed by an independent developer and is not affiliated with any large corporation or third-party platform.</p>
+      <p>Miko Blocks is a locally-run block puzzle game that <strong>works completely offline</strong>.</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🚫</span>Information We Do NOT Collect</h2>
+      <p>The App does <strong>not</strong> collect any of the following:</p>
+      <ul>
+        <li>Personal identifiers such as name, email, or phone number</li>
+        <li>Location data (GPS or network-based)</li>
+        <li>Device identifiers (IDFA, advertising ID, etc.)</li>
+        <li>Usage behavior, crash logs, or analytics data</li>
+        <li>Camera or microphone data</li>
+        <li>Contacts, calendar, or other sensitive permission data</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">💾</span>Data Stored Locally on Your Device</h2>
+      <p>The App stores only the following information locally on your device to save your preferences and progress:</p>
+      <ul>
+        <li><strong>High Score</strong>: Your all-time best score</li>
+        <li><strong>Sound Settings</strong>: Whether sound effects are enabled</li>
+        <li><strong>Haptic Settings</strong>: Whether haptic feedback is enabled</li>
+        <li><strong>Block Style</strong>: Your chosen block appearance theme</li>
+        <li><strong>Custom Image Paths</strong>: Local file paths of images you've chosen (if any)</li>
+        <li><strong>Language Preference</strong>: Your selected display language</li>
+      </ul>
+      <p>All of the above data is <strong>stored only on your device</strong> and is never uploaded to any server or shared with any third party.</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📷</span>Photo Library Permission</h2>
+      <p>When you use the "Custom Block Images" feature, the App will request access to your photo library. This permission is used <strong>solely</strong> to allow you to select a local image as a block background.</p>
+      <p>We do not read, store, or upload any other photos or data from your library. You may revoke this permission at any time in System Settings; revoking it will disable the custom image feature but will not affect other gameplay functions.</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🌐</span>Network Access</h2>
+      <p>The App makes <strong>no network requests whatsoever</strong>. It connects to no servers and contains no advertising SDKs, analytics SDKs, or third-party tracking code. The game functions fully in offline mode.</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">👶</span>Children's Privacy</h2>
+      <p>Because the App collects no personal information and requires no account registration, it is suitable for users of all ages, including children under 13. We do not knowingly collect any personal information from children.</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🔄</span>Changes to This Policy</h2>
+      <p>If we make material changes to this Privacy Policy, we will notify you by updating the "Effective Date" on this page. We encourage you to review this policy periodically to stay informed.</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📬</span>Contact Us</h2>
+      <p>If you have any questions about this Privacy Policy, please reach out via:</p>
+      <ul>
+        <li>Email: fastable#proton.me (please replace # with @ before sending)</li>
+      </ul>
+    </div>
+  </div><!-- /en -->
+
+</main>
+
+<footer>
+  <p>
+    <span class="txt-zh">© 2025 Miko Blocks · 颜爆方块 · 保留所有权利</span>
+    <span class="txt-en">© 2025 Miko Blocks · All Rights Reserved</span>
+  </p>
+  <p style="margin-top:8px;">
+    <a href="terms-of-service.html">
+      <span class="txt-zh">用户协议</span>
+      <span class="txt-en">Terms of Service</span>
+    </a>
+    &nbsp;·&nbsp;
+    <a href="index.html">
+      <span class="txt-zh">返回首页</span>
+      <span class="txt-en">Home</span>
+    </a>
+  </p>
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.body.className = 'lang-' + lang;
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.querySelectorAll('.lang-btn').forEach(function(btn) {
+      btn.classList.toggle('active', btn.textContent.trim() === (lang === 'zh' ? '中文' : 'English'));
+    });
+  }
+
+  (function() {
+    var lang = navigator.language || navigator.userLanguage || '';
+    setLang(lang.toLowerCase().startsWith('zh') ? 'zh' : 'en');
+  })();
+</script>
+</body>
+</html>

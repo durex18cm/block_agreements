@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Miko Blocks · 颜爆方块</title>
+  <style>
+    :root {
+      --accent: #5c6bc0;
+      --teal:   #00897b;
+      --text:   #1a1a2e;
+      --muted:  #6b7280;
+      --border: #e0e0e0;
+      --bg:     #f8f9fc;
+      --card:   #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 52px 48px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,.07);
+    }
+
+    .app-icon {
+      width: 96px; height: 96px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #3949ab 0%, #00897b 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px;
+      margin: 0 auto 24px;
+    }
+
+    h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; }
+    .tagline { color: var(--muted); margin-top: 8px; font-size: 1rem; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 32px 0;
+    }
+
+    .links { display: flex; flex-direction: column; gap: 14px; }
+
+    .link-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 22px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      text-decoration: none;
+      color: var(--text);
+      transition: all .2s;
+      text-align: left;
+    }
+    .link-btn:hover { border-color: var(--accent); background: #f0f1fb; }
+    .link-btn.teal:hover { border-color: var(--teal); background: #e0f2f1; }
+
+    .link-btn .btn-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .link-btn .btn-icon.purple { background: #e8eaf6; }
+    .link-btn .btn-icon.teal   { background: #e0f2f1; }
+
+    .link-btn .btn-text strong { display: block; font-weight: 700; font-size: 1rem; }
+    .link-btn .btn-text span   { font-size: .85rem; color: var(--muted); }
+
+    footer {
+      margin-top: 32px;
+      color: var(--muted);
+      font-size: .8rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="app-icon">🧩</div>
+    <h1>Miko Blocks</h1>
+    <p class="tagline">颜爆方块 · A colorful block puzzle game</p>
+    <hr class="divider" />
+    <div class="links">
+      <a href="privacy-policy.html" class="link-btn">
+        <div class="btn-icon purple">🔒</div>
+        <div class="btn-text">
+          <strong>隐私政策 · Privacy Policy</strong>
+          <span>了解我们如何保护您的数据 · How we handle your data</span>
+        </div>
+      </a>
+      <a href="terms-of-service.html" class="link-btn teal">
+        <div class="btn-icon teal">📄</div>
+        <div class="btn-text">
+          <strong>用户协议 · Terms of Service</strong>
+          <span>应用使用条款与条件 · Terms and conditions for use</span>
+        </div>
+      </a>
+    </div>
+  </div>
+  <footer>© 2025 Miko Blocks · 颜爆方块 · All Rights Reserved</footer>
+</body>
+</html>
