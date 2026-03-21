@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>支持中心 / Support — Miko Blocks</title>
+  <style>
+    :root {
+      --accent:       #5c6bc0;
+      --accent-light: #e8eaf6;
+      --teal:         #00897b;
+      --teal-light:   #e0f2f1;
+      --text:         #1a1a2e;
+      --muted:        #6b7280;
+      --border:       #e0e0e0;
+      --bg:           #f8f9fc;
+      --card:         #ffffff;
+      --radius:       12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 16px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #00695c 0%, #00897b 100%);
+      color: #fff;
+      padding: 56px 24px 40px;
+      text-align: center;
+    }
+    header .app-icon {
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 20px;
+    }
+    header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+    header .subtitle { margin-top: 8px; font-size: 1rem; opacity: .8; }
+
+    /* ── Language switcher ── */
+    .lang-bar {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 18px 24px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    }
+    .lang-btn {
+      padding: 6px 22px;
+      border-radius: 999px;
+      border: 2px solid var(--teal);
+      background: transparent;
+      color: var(--teal);
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .lang-btn.active,
+    .lang-btn:hover {
+      background: var(--teal);
+      color: #fff;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Cards ── */
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .section-card h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--teal);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--teal-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-card h2 .icon {
+      width: 28px; height: 28px;
+      background: var(--teal-light);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .section-card p { margin-bottom: 12px; color: var(--text); }
+    .section-card p:last-child { margin-bottom: 0; }
+    .section-card ul {
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+    .section-card ul li { margin-bottom: 8px; }
+
+    /* Highlight box */
+    .highlight {
+      background: var(--teal-light);
+      border-left: 4px solid var(--teal);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      color: #00695c;
+      font-weight: 500;
+    }
+
+    /* Contact card */
+    .contact-card {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      background: var(--teal-light);
+      border: 1px solid #b2dfdb;
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-top: 16px;
+    }
+    .contact-card .contact-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: var(--teal);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+    .contact-card .contact-info strong {
+      display: block;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .contact-card .contact-info a {
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .contact-card .contact-info a:hover { text-decoration: underline; }
+
+    /* FAQ items */
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+    }
+    .faq-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .faq-item:first-child { padding-top: 0; }
+    .faq-item .faq-q {
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .faq-item .faq-a {
+      color: var(--muted);
+      font-size: .95rem;
+      margin: 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: .825rem;
+      padding: 32px 24px;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── i18n visibility ── */
+    [data-lang] { display: none; }
+    body.lang-zh [data-lang="zh"] { display: block; }
+    body.lang-en [data-lang="en"] { display: block; }
+
+    /* inline bilingual spans */
+    body.lang-zh .txt-en { display: none; }
+    body.lang-en .txt-zh { display: none; }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.5rem; }
+      .section-card { padding: 22px 18px; }
+      .contact-card { flex-direction: column; text-align: center; gap: 12px; }
+    }
+  </style>
+</head>
+<body class="lang-zh">
+
+<header>
+  <div class="app-icon">🧩</div>
+  <h1>
+    <span class="txt-zh">支持中心</span>
+    <span class="txt-en">Support Center</span>
+  </h1>
+  <p class="subtitle">Miko Blocks · 颜爆方块</p>
+</header>
+
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="setLang('zh')">中文</button>
+  <button class="lang-btn"        onclick="setLang('en')">English</button>
+</div>
+
+<main>
+
+  <!-- ══ CHINESE ══ -->
+  <div data-lang="zh">
+
+    <div class="section-card">
+      <div class="highlight">
+        欢迎使用 Miko Blocks（颜爆方块）！如果您在使用过程中遇到任何问题，我们很乐意为您提供帮助。
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📬</span>联系开发者</h2>
+      <p>本应用由独立开发者维护。如果您有任何疑问、反馈或遇到技术问题，欢迎通过邮件联系我们：</p>
+      <div class="contact-card">
+        <div class="contact-icon">✉️</div>
+        <div class="contact-info">
+          <strong>开发者邮箱</strong>
+          <a>fastable#proton.me（发送时请将 # 替换为 @）</a>
+        </div>
+      </div>
+      <p style="margin-top:16px; color: var(--muted); font-size: .9rem;">我们通常会在 1–3 个工作日内回复您的邮件。</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">❓</span>常见问题</h2>
+      <div class="faq-item">
+        <p class="faq-q">游戏数据丢失了怎么办？</p>
+        <p class="faq-a">游戏数据保存在您的设备本地。如果您更换了设备或重新安装了应用，本地数据可能无法自动恢复。建议通过 iCloud 备份来保留游戏进度。</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">如何关闭音效或震动？</p>
+        <p class="faq-a">进入游戏后，点击设置图标，可以分别开关音效和触感反馈（震动）。</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">如何使用自定义方块图片？</p>
+        <p class="faq-a">在方块样式设置中选择"自定义图片"，然后从您的相册中选择一张图片即可。应用仅会使用您选定的图片，不会访问相册中的其他内容。</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">游戏需要网络连接吗？</p>
+        <p class="faq-a">不需要。Miko Blocks 完全在本地运行，无需任何网络连接即可正常游戏。</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">如何反馈 Bug 或提出功能建议？</p>
+        <p class="faq-a">请通过上方邮箱联系我们，详细描述您遇到的问题或建议，我们会认真阅读每一封邮件。</p>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📱</span>应用信息</h2>
+      <ul>
+        <li><strong>应用名称：</strong>Miko Blocks（颜爆方块）</li>
+        <li><strong>平台：</strong>iOS / iPadOS</li>
+        <li><strong>开发者：</strong>独立开发者</li>
+        <li><strong>支持联系：</strong>fastable#proton.me（# 替换为 @）</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📋</span>相关文档</h2>
+      <p>您也可以查阅以下文档，了解更多关于本应用的信息：</p>
+      <ul>
+        <li><a href="privacy-policy.html" style="color: var(--accent);">隐私政策</a> — 了解我们如何处理您的数据</li>
+        <li><a href="terms-of-service.html" style="color: var(--accent);">用户协议</a> — 应用使用条款与条件</li>
+      </ul>
+    </div>
+
+  </div><!-- /zh -->
+
+  <!-- ══ ENGLISH ══ -->
+  <div data-lang="en">
+
+    <div class="section-card">
+      <div class="highlight">
+        Welcome to Miko Blocks! If you run into any issues or have questions, we're here to help.
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📬</span>Contact the Developer</h2>
+      <p>Miko Blocks is maintained by an independent developer. If you have any questions, feedback, or encounter a technical issue, please reach out via email:</p>
+      <div class="contact-card">
+        <div class="contact-icon">✉️</div>
+        <div class="contact-info">
+          <strong>Developer Email</strong>
+          <a>fastable#proton.me (replace # with @ before sending)</a>
+        </div>
+      </div>
+      <p style="margin-top:16px; color: var(--muted); font-size: .9rem;">We typically respond within 1–3 business days.</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">❓</span>Frequently Asked Questions</h2>
+      <div class="faq-item">
+        <p class="faq-q">My game data is gone — what happened?</p>
+        <p class="faq-a">Game data is saved locally on your device. Switching devices or reinstalling the app may result in data loss. We recommend enabling iCloud backup to preserve your progress.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">How do I turn off sound or haptics?</p>
+        <p class="faq-a">Tap the settings icon in-game to toggle sound effects and haptic feedback on or off independently.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">How do I use a custom block image?</p>
+        <p class="faq-a">In the block style settings, choose "Custom Image" and select a photo from your library. The app only uses the image you select and does not access any other content in your photo library.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">Does the game require an internet connection?</p>
+        <p class="faq-a">No. Miko Blocks runs entirely offline — no internet connection is needed to play.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">How can I report a bug or suggest a feature?</p>
+        <p class="faq-a">Please email us at the address above with a description of the issue or suggestion. We read every message.</p>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📱</span>App Information</h2>
+      <ul>
+        <li><strong>App Name:</strong> Miko Blocks</li>
+        <li><strong>Platform:</strong> iOS / iPadOS</li>
+        <li><strong>Developer:</strong> Independent Developer</li>
+        <li><strong>Support Contact:</strong> fastable#proton.me (replace # with @)</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📋</span>Related Documents</h2>
+      <p>You may also find the following documents helpful:</p>
+      <ul>
+        <li><a href="privacy-policy.html" style="color: var(--accent);">Privacy Policy</a> — How we handle your data</li>
+        <li><a href="terms-of-service.html" style="color: var(--accent);">Terms of Service</a> — Terms and conditions for use</li>
+      </ul>
+    </div>
+
+  </div><!-- /en -->
+
+</main>
+
+<footer>
+  <p>
+    <span class="txt-zh">© 2025 Miko Blocks · 颜爆方块 · 保留所有权利</span>
+    <span class="txt-en">© 2025 Miko Blocks · All Rights Reserved</span>
+  </p>
+  <p style="margin-top:8px;">
+    <a href="privacy-policy.html">
+      <span class="txt-zh">隐私政策</span>
+      <span class="txt-en">Privacy Policy</span>
+    </a>
+    &nbsp;·&nbsp;
+    <a href="terms-of-service.html">
+      <span class="txt-zh">用户协议</span>
+      <span class="txt-en">Terms of Service</span>
+    </a>
+    &nbsp;·&nbsp;
+    <a href="index.html">
+      <span class="txt-zh">返回首页</span>
+      <span class="txt-en">Home</span>
+    </a>
+  </p>
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.body.className = 'lang-' + lang;
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.querySelectorAll('.lang-btn').forEach(function(btn) {
+      btn.classList.toggle('active', btn.textContent.trim() === (lang === 'zh' ? '中文' : 'English'));
+    });
+  }
+
+  (function() {
+    var lang = navigator.language || navigator.userLanguage || '';
+    setLang(lang.toLowerCase().startsWith('zh') ? 'zh' : 'en');
+  })();
+</script>
+</body>
+</html>
