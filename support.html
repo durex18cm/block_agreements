@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>支持中心 / Support — Miko Blocks</title>
+  <title>Support — Miko Blocks</title>
   <style>
     :root {
       --accent:       #5c6bc0;
@@ -390,6 +390,7 @@
   function setLang(lang) {
     document.body.className = 'lang-' + lang;
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.title = lang === 'zh' ? '支持中心 — Miko Blocks' : 'Support — Miko Blocks';
     document.querySelectorAll('.lang-btn').forEach(function(btn) {
       btn.classList.toggle('active', btn.textContent.trim() === (lang === 'zh' ? '中文' : 'English'));
     });
