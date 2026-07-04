@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- OG:START — default (English) fallback. The `api/record` edge function
+       rewrites everything between these markers per the sharer's language (`lg`)
+       and the round's score, so link-preview crawlers (which don't run JS) get a
+       localized, dynamic card. A direct static hit keeps this English default. -->
+  <title>Match Report · Yah Blocks</title>
+  <meta name="description" content="Yah Blocks · A highlight report of one match" />
+  <meta property="og:title" content="Yah Blocks · Match Report" />
+  <meta property="og:description" content="Check out how I did this round!" />
+  <meta property="og:type" content="website" />
+  <!-- OG:END -->
+  <style>
+    /*
+     * Colours mirror lib/core/theme/app_colors.dart (AppColors) so the web
+     * report matches the Flutter detail screen 1:1. Keep them centralised here
+     * instead of scattering literals through the markup.
+     */
+    :root {
+      --bg-grad-top:    #3A4FA8;  /* bgGradientTop */
+      --bg-grad-mid:    #2C3E8C;  /* bgGradientMid */
+      --bg-grad-bottom: #1E2D6A;  /* bgGradientBottom */
+      --background:     #2C3E8C;  /* AppColors.background (toast/snackbar bg) */
+
+      --score-gold:     #FFD54F;  /* scoreGold */
+      --combo-end:      #FFAB00;  /* comboBannerEnd */
+      --primary-green:  #66BB6A;  /* primaryGreen */
+      --block-sky-blue: #2EA8E0;  /* blockSkyBlue */
+      --block-teal:     #20B8A8;  /* blockTeal (avatar fallback gradient) */
+      --rainbow-blue:   #42A5F5;  /* titleRainbowBlue */
+      --score-perfect:  #E040FB;  /* scoreTextPerfect */
+      --score-combo:    #FFAB40;  /* scoreTextCombo */
+
+      --white: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--white);
+      background: linear-gradient(
+        to bottom,
+        var(--bg-grad-top) 0%,
+        var(--bg-grad-mid) 50%,
+        var(--bg-grad-bottom) 100%
+      );
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+
+    /* Floating decorative blocks sit behind everything. */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100%;
+      padding: env(safe-area-inset-top) 20px 28px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ───────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 52px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+    .header h1 {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    /* ── Hero card (gold) ─────────────────────────────────── */
+    .hero {
+      border-radius: 20px;
+      padding: 18px;
+      text-align: center;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 213, 79, 0.22) 0%,
+        rgba(255, 171, 0, 0.06) 50%,
+        rgba(255, 171, 0, 0) 100%
+      );
+      border: 1px solid rgba(255, 213, 79, 0.30);
+    }
+    .hero .score-label {
+      /* identity row (when present) owns the gap above the score */
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.65);
+    }
+    .hero .score {
+      margin-top: 2px;
+      font-size: 44px;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--score-gold);
+    }
+    .hero .range {
+      margin-top: 10px;
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .hero .reward {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--score-gold);
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 213, 79, 0.30);
+    }
+
+    /* ── Owner identity (avatar + nickname, one centered row) ── */
+    /* A personal best deepens the card border, golds the avatar ring and
+       reveals the "个人最佳" chip. */
+    .hero.is-best { border-color: rgba(255, 213, 79, 0.45); }
+    .id-row {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 11px;
+    }
+    .avatar {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--white);
+      background: linear-gradient(145deg, var(--primary-green), var(--block-teal));
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .hero.is-best .avatar {
+      border-color: rgba(255, 213, 79, 0.85);
+      box-shadow: 0 0 0 3px rgba(255, 213, 79, 0.15),
+                  0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .id-row .nm {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--white);
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .best-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+      color: var(--bg-grad-bottom);
+      background: linear-gradient(90deg, var(--score-gold), var(--combo-end));
+    }
+
+    /* ── 2×2 stat grid ────────────────────────────────────── */
+    .stat-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .stat-tile {
+      display: flex;
+      align-items: center;
+      padding: 13px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .stat-tile .badge {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .stat-tile .meta {
+      margin-left: 11px;
+      min-width: 0;
+    }
+    .stat-tile .value {
+      font-size: 19px;
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .stat-tile .label {
+      margin-top: 3px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.55);
+      white-space: nowrap;
+    }
+
+    /* ── Revive panel ─────────────────────────────────────── */
+    .revive {
+      margin-top: 14px;
+      padding: 15px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .revive .head {
+      display: flex;
+      align-items: center;
+    }
+    .revive .head .title {
+      margin-left: 8px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .revive .head .total {
+      margin-left: auto;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--primary-green);
+    }
+    .revive .bar {
+      display: flex;
+      height: 8px;
+      margin-top: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .revive .bar span { display: block; height: 100%; }
+    .revive .line {
+      display: flex;
+      align-items: center;
+      padding: 9px 0;
+    }
+    .revive .line .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .revive .line .name {
+      margin-left: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .revive .line .count {
+      margin-left: auto;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    /* ── Download CTA ─────────────────────────────────────── */
+    .cta {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 16px;
+      text-decoration: none;
+      color: #1E2D6A;
+      font-weight: 900;
+      font-size: 15px;
+      background: linear-gradient(135deg, var(--score-gold) 0%, var(--combo-end) 100%);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    .cta .app-icon {
+      width: 32px;
+      height: 32px;
+      /* Apple app-icon corner radius ≈ 22.37% of the icon size */
+      border-radius: 22.37%;
+      object-fit: cover;
+      display: block;
+    }
+
+    footer {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* ── Empty / error state ──────────────────────────────── */
+    .empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 12px;
+      padding: 40px 0;
+    }
+    .empty .emoji { font-size: 48px; }
+    .empty .msg { font-size: 15px; color: rgba(255, 255, 255, 0.75); }
+    .empty .sub { font-size: 13px; color: rgba(255, 255, 255, 0.45); }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="page">
+    <div class="header"><h1 data-i18n="header">战报</h1></div>
+
+    <!-- Report content (filled in by JS when data is present) -->
+    <main id="report" class="hidden">
+      <section class="hero" id="hero">
+        <!-- Owner identity (avatar + nickname), one centered row. Shown only
+             when the share link carries it; the "个人最佳" chip appears on a
+             personal best. -->
+        <div class="id-row hidden" id="idrow">
+          <div class="avatar" id="avatar"></div>
+          <span class="nm" id="nickname"></span>
+          <span class="best-chip hidden" id="bestchip" data-i18n="best">🏆 个人最佳</span>
+        </div>
+        <div class="score-label" data-i18n="scoreLabel">本局得分</div>
+        <div class="score" id="score">0</div>
+        <div class="range" id="range">—</div>
+        <div class="reward" id="reward">本局奖励 +0 金币</div>
+      </section>
+
+      <section class="stat-grid">
+        <div class="stat-tile">
+          <div class="badge" style="background: rgba(46, 168, 224, 0.18);">🧱</div>
+          <div class="meta">
+            <div class="value" id="rows" style="color: var(--white);">—</div>
+            <div class="label" data-i18n="statRows">消除行数</div>
+          </div>
+        </div>
+        <div class="stat-tile">
+          <div class="badge" style="background: rgba(224, 64, 251, 0.16);">✨</div>
+          <div class="meta">
+            <div class="value" id="perfect" style="color: var(--score-perfect);">—</div>
+            <div class="label" data-i18n="statPerfect">完美消除</div>
+          </div>
+        </div>
+        <div class="stat-tile">
+          <div class="badge" style="background: rgba(255, 171, 64, 0.16);">⚡</div>
+          <div class="meta">
+            <div class="value" id="combo" style="color: var(--score-combo);">—</div>
+            <div class="label" data-i18n="statCombo">连消多行</div>
+          </div>
+        </div>
+        <div class="stat-tile">
+          <div class="badge" style="background: rgba(102, 187, 106, 0.16);">⏱️</div>
+          <div class="meta">
+            <div class="value" id="duration" style="color: var(--white);">—</div>
+            <div class="label" data-i18n="statDuration">游戏时长</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="revive">
+        <div class="head">
+          <span>❤️</span>
+          <span class="title" data-i18n="reviveTitle">复活记录</span>
+          <span class="total" id="revive-total">0</span>
+        </div>
+        <div class="bar hidden" id="revive-bar">
+          <span id="bar-free" style="background: var(--primary-green);"></span>
+          <span id="bar-ad" style="background: var(--rainbow-blue);"></span>
+          <span id="bar-coin" style="background: var(--score-gold);"></span>
+        </div>
+        <div class="line">
+          <span class="dot" style="background: var(--primary-green);"></span>
+          <span class="name" data-i18n="reviveFree">免费复活</span>
+          <span class="count" id="revive-free" style="color: var(--primary-green);">0 次</span>
+        </div>
+        <div class="line">
+          <span class="dot" style="background: var(--rainbow-blue);"></span>
+          <span class="name" data-i18n="reviveAd">广告复活</span>
+          <span class="count" id="revive-ad" style="color: var(--rainbow-blue);">0 次</span>
+        </div>
+        <div class="line">
+          <span class="dot" style="background: var(--score-gold);"></span>
+          <span class="name" data-i18n="reviveCoin">金币复活</span>
+          <span class="count" id="revive-coin" style="color: var(--score-gold);">0 次</span>
+        </div>
+      </section>
+
+      <!-- No download CTA on the global report: the overseas app has no public
+           store/download page yet (block_agreements has no download.html). Add
+           one here when a store link exists. -->
+
+      <footer data-i18n="footer">© 2026 呀方块</footer>
+    </main>
+
+    <!-- Empty / error state -->
+    <main id="empty" class="empty hidden">
+      <div class="emoji">🧩</div>
+      <div class="msg" id="empty-msg" data-i18n="emptyMsg">未找到对局数据</div>
+      <div class="sub" data-i18n="emptySub">请通过游戏内的「分享」重新打开此页面</div>
+    </main>
+  </div>
+
+  <script>
+    "use strict";
+
+    /* ─────────────────────────────────────────────────────────
+     * 0. i18n — Simplified Chinese / Traditional Chinese / English, auto
+     *    detected from the browser language. Anything that isn't zh/en falls
+     *    back to English. A saved `yb_lang` (shared with the download page)
+     *    wins so a manual choice there carries over.
+     * ───────────────────────────────────────────────────────── */
+    const I18N = {
+      "zh-CN": {
+        _lang: "zh-CN",
+        title: "对局战报 · 呀方块",
+        metaDesc: "呀方块 · 一局精彩对战报告",
+        ogTitle: "呀方块 · 对局战报",
+        ogDesc: "来看看我这局的成绩！",
+        appName: "呀方块",
+        header: "战报",
+        best: "🏆 个人最佳",
+        scoreLabel: "本局得分",
+        statRows: "消除行数",
+        statPerfect: "完美消除",
+        statCombo: "连消多行",
+        statDuration: "游戏时长",
+        reviveTitle: "复活记录",
+        reviveFree: "免费复活",
+        reviveAd: "广告复活",
+        reviveCoin: "金币复活",
+        footer: "© 2026 呀方块",
+        emptyMsg: "未找到对局数据",
+        emptySub: "请通过游戏内的「分享」重新打开此页面",
+        errCorrupt: "数据已损坏或格式不正确",
+        errUnsupported: "该分享链接暂不支持，请更新游戏后重试",
+        errNoData: "未找到对局数据",
+        reward: (n) => `本局奖励 +${n} 金币`,
+        times: (n) => `${n} 次`,
+      },
+      "zh-TW": {
+        _lang: "zh-TW",
+        title: "對局戰報 · 呀方塊",
+        metaDesc: "呀方塊 · 一局精彩對戰報告",
+        ogTitle: "呀方塊 · 對局戰報",
+        ogDesc: "來看看我這局的成績！",
+        appName: "呀方塊",
+        header: "戰報",
+        best: "🏆 個人最佳",
+        scoreLabel: "本局得分",
+        statRows: "消除行數",
+        statPerfect: "完美消除",
+        statCombo: "連消多行",
+        statDuration: "遊戲時長",
+        reviveTitle: "復活記錄",
+        reviveFree: "免費復活",
+        reviveAd: "廣告復活",
+        reviveCoin: "金幣復活",
+        footer: "© 2026 呀方塊",
+        emptyMsg: "未找到對局數據",
+        emptySub: "請透過遊戲內的「分享」重新開啟此頁面",
+        errCorrupt: "數據已損壞或格式不正確",
+        errUnsupported: "此分享連結暫不支援，請更新遊戲後重試",
+        errNoData: "未找到對局數據",
+        reward: (n) => `本局獎勵 +${n} 金幣`,
+        times: (n) => `${n} 次`,
+      },
+      en: {
+        _lang: "en",
+        title: "Match Report · Yah Blocks",
+        metaDesc: "Yah Blocks · A highlight report of one match",
+        ogTitle: "Yah Blocks · Match Report",
+        ogDesc: "Check out how I did this round!",
+        appName: "Yah Blocks",
+        header: "Match Report",
+        best: "🏆 Personal Best",
+        scoreLabel: "SCORE",
+        statRows: "Lines Cleared",
+        statPerfect: "Perfect Clears",
+        statCombo: "Multi-line Clears",
+        statDuration: "Play Time",
+        reviveTitle: "Revives",
+        reviveFree: "Free Revive",
+        reviveAd: "Ad Revive",
+        reviveCoin: "Coin Revive",
+        footer: "© 2026 Yah Blocks",
+        emptyMsg: "Match data not found",
+        emptySub: "Please reopen this page via the “Share” button in the game",
+        errCorrupt: "The data is corrupted or invalid",
+        errUnsupported:
+          "This share link isn’t supported yet. Please update the game and try again.",
+        errNoData: "Match data not found",
+        reward: (n) => `Reward +${n} coins`,
+        times: (n) => `${n}×`,
+      },
+    };
+
+    function detectLang(hint) {
+      // 1. Sharer's language, baked into the link payload (`lg`) — wins so a
+      //    shared report opens in the language of whoever shared it.
+      if (hint && I18N[hint]) return hint;
+      try {
+        const saved = localStorage.getItem("yb_lang");
+        if (saved && I18N[saved]) return saved;
+      } catch (e) {
+        /* private mode — ignore */
+      }
+      const cands =
+        navigator.languages && navigator.languages.length
+          ? navigator.languages
+          : [navigator.language || "en"];
+      for (const raw of cands) {
+        const l = (raw || "").toLowerCase();
+        if (l.startsWith("zh")) {
+          return l.includes("tw") ||
+            l.includes("hk") ||
+            l.includes("mo") ||
+            l.includes("hant")
+            ? "zh-TW"
+            : "zh-CN";
+        }
+        if (l.startsWith("en")) return "en";
+      }
+      return "en"; // fallback
+    }
+
+    // Assigned at boot, once the payload's language hint (`lg`) is known.
+    let L;
+
+    function applyStaticI18n() {
+      document.documentElement.lang = L._lang;
+      document.title = L.title;
+      const meta = (sel, val) => {
+        const el = document.querySelector(sel);
+        if (el) el.setAttribute("content", val);
+      };
+      meta('meta[name="description"]', L.metaDesc);
+      meta('meta[property="og:title"]', L.ogTitle);
+      meta('meta[property="og:description"]', L.ogDesc);
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const k = el.getAttribute("data-i18n");
+        if (L[k] != null) el.textContent = L[k];
+      });
+      document.querySelectorAll("[data-i18n-alt]").forEach((el) => {
+        const k = el.getAttribute("data-i18n-alt");
+        if (L[k] != null) el.setAttribute("alt", L[k]);
+      });
+    }
+
+    /* ─────────────────────────────────────────────────────────
+     * 1. Parse the round payload from the URL.
+     *    Plan A (current): ?d=<base64url(JSON)> carries the whole round.
+     *    Plan B (reserved): ?id=<shareId> would fetch from a future public
+     *    backend endpoint — we detect it and show a friendly placeholder.
+     * ───────────────────────────────────────────────────────── */
+    function base64UrlDecode(input) {
+      let s = input.replace(/-/g, "+").replace(/_/g, "/");
+      while (s.length % 4) s += "=";
+      // atob → binary string; decode as UTF-8 so CJK nicknames survive.
+      const bin = atob(s);
+      const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+      return new TextDecoder("utf-8").decode(bytes);
+    }
+
+    function parseRound() {
+      const params = new URLSearchParams(location.search);
+      const d = params.get("d");
+      if (d) {
+        try {
+          return { round: JSON.parse(base64UrlDecode(d)) };
+        } catch (e) {
+          return { errorKey: "errCorrupt" };
+        }
+      }
+      if (params.get("id")) {
+        // Plan B not wired yet; the link format is reserved.
+        return { errorKey: "errUnsupported" };
+      }
+      return { errorKey: "errNoData" };
+    }
+
+    /* ─────────────────────────────────────────────────────────
+     * 2. Formatting — mirrors lib/utils/{number,record}_formatters.dart.
+     * ───────────────────────────────────────────────────────── */
+    function formatGroupedInt(value) {
+      const negative = value < 0;
+      const raw = Math.abs(Math.trunc(value)).toString();
+      let out = "";
+      for (let i = 0; i < raw.length; i++) {
+        const remaining = raw.length - i;
+        out += raw[i];
+        if (remaining > 1 && remaining % 3 === 1) out += ",";
+      }
+      return negative ? "-" + out : out;
+    }
+
+    const two = (n) => String(n).padStart(2, "0");
+
+    function formatRange(startMs, endMs) {
+      if (!startMs) return "—";
+      const s = new Date(startMs);
+      const startText =
+        `${s.getFullYear()}-${two(s.getMonth() + 1)}-${two(s.getDate())}` +
+        `  ${two(s.getHours())}:${two(s.getMinutes())}`;
+      if (!endMs) return startText;
+      const e = new Date(endMs);
+      const sameDay =
+        s.getFullYear() === e.getFullYear() &&
+        s.getMonth() === e.getMonth() &&
+        s.getDate() === e.getDate();
+      const endText = sameDay
+        ? `${two(e.getHours())}:${two(e.getMinutes())}`
+        : `${e.getFullYear()}-${two(e.getMonth() + 1)}-${two(e.getDate())} ` +
+          `${two(e.getHours())}:${two(e.getMinutes())}`;
+      return `${startText} → ${endText}`;
+    }
+
+    // Prefers the client-measured active play time (durationMs) — the same value
+    // the app reports and shows in-app — over the raw end − start span. Falls
+    // back to the wall-clock span for legacy links that predate durationMs.
+    function formatDuration(durationMs, startMs, endMs) {
+      let total;
+      if (typeof durationMs === "number" && durationMs > 0) {
+        total = Math.floor(durationMs / 1000);
+      } else if (startMs && endMs) {
+        total = Math.floor((endMs - startMs) / 1000);
+      } else {
+        return "—";
+      }
+      if (total < 0) return "—";
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const sec = total % 60;
+      if (h > 0) return `${h}:${two(m)}:${two(sec)}`;
+      return `${m}:${two(sec)}`;
+    }
+
+    // Floored, non-negative whole coin count (matches GameRound.rewardCoins).
+    function rewardCoins(round) {
+      const rc = round.rc;
+      if (typeof rc !== "number") return 0;
+      return rc <= 0 ? 0 : Math.floor(rc);
+    }
+
+    const PLACEHOLDER = "—";
+    const nz = (v) => (v === null || v === undefined ? PLACEHOLDER : String(v));
+
+    // Only http(s) avatar URLs are honoured (the payload is user-supplied).
+    function isValidHttpUrl(u) {
+      return typeof u === "string" && /^https?:\/\//i.test(u.trim());
+    }
+    function avatarInitial(name) {
+      return name ? name.trim().charAt(0).toUpperCase() : "🙂";
+    }
+
+    /* Owner identity (n=nickname, a=avatarUrl, pb=personal best). All optional;
+     * legacy links without them simply render the score hero alone. */
+    function renderIdentity(round) {
+      const name = typeof round.n === "string" ? round.n.trim() : "";
+      const avatarUrl = typeof round.a === "string" ? round.a.trim() : "";
+      const isBest = round.pb === 1 || round.pb === true;
+      const hasIdentity = name !== "" || isValidHttpUrl(avatarUrl);
+      if (!hasIdentity) return;
+
+      const avatarEl = document.getElementById("avatar");
+      if (isValidHttpUrl(avatarUrl)) {
+        // Set src as a property (not via innerHTML) so a hostile URL can't
+        // inject markup; fall back to the initial if the image fails to load.
+        const img = document.createElement("img");
+        img.alt = "";
+        img.referrerPolicy = "no-referrer";
+        img.onerror = () => { avatarEl.textContent = avatarInitial(name); };
+        img.src = avatarUrl;
+        avatarEl.appendChild(img);
+      } else {
+        avatarEl.textContent = avatarInitial(name);
+      }
+
+      // textContent → the nickname is rendered as plain text, never markup.
+      const nicknameEl = document.getElementById("nickname");
+      if (name) {
+        nicknameEl.textContent = name;
+      } else {
+        nicknameEl.classList.add("hidden");
+      }
+
+      document.getElementById("idrow").classList.remove("hidden");
+
+      if (isBest) {
+        document.getElementById("hero").classList.add("is-best");
+        document.getElementById("bestchip").classList.remove("hidden");
+      }
+    }
+
+    /* ─────────────────────────────────────────────────────────
+     * 3. Render.
+     * ───────────────────────────────────────────────────────── */
+    function render(round) {
+      renderIdentity(round);
+
+      document.getElementById("score").textContent = formatGroupedInt(round.s || 0);
+      document.getElementById("range").textContent = formatRange(round.st, round.et);
+      document.getElementById("reward").textContent = L.reward(rewardCoins(round));
+
+      document.getElementById("rows").textContent = nz(round.er);
+      document.getElementById("perfect").textContent = nz(round.pc);
+      document.getElementById("combo").textContent = nz(round.cm);
+      document.getElementById("duration").textContent =
+        formatDuration(round.dm, round.st, round.et);
+
+      const free = round.fr || 0;
+      const ad = round.ar || 0;
+      const coin = round.cr || 0;
+      const total = free + ad + coin;
+      document.getElementById("revive-total").textContent = total;
+      document.getElementById("revive-free").textContent = L.times(free);
+      document.getElementById("revive-ad").textContent = L.times(ad);
+      document.getElementById("revive-coin").textContent = L.times(coin);
+
+      if (total > 0) {
+        const bar = document.getElementById("revive-bar");
+        bar.classList.remove("hidden");
+        document.getElementById("bar-free").style.flex = free;
+        document.getElementById("bar-ad").style.flex = ad;
+        document.getElementById("bar-coin").style.flex = coin;
+      }
+
+      document.getElementById("report").classList.remove("hidden");
+    }
+
+    function showEmpty(msg) {
+      if (msg) document.getElementById("empty-msg").textContent = msg;
+      document.getElementById("empty").classList.remove("hidden");
+    }
+
+    /* ─────────────────────────────────────────────────────────
+     * 4. Floating background blocks — ports lib/widgets/floating_blocks.dart.
+     *    14 blocks, seeded RNG, Lissajous oscillation, opacity 0.15, three
+     *    rounded layers (shadow / highlight / fill). requestAnimationFrame
+     *    drives time so the motion never resets.
+     * ───────────────────────────────────────────────────────── */
+    const PALETTE = [
+      "#2EA8E0", "#1B7FCC", "#E8A820", "#E86820", "#38B84A",
+      "#8CC832", "#D83030", "#9838D0", "#E83878", "#20B8A8",
+    ];
+
+    // Deterministic PRNG (mulberry32) so layout is stable like Dart's Random(42).
+    function mulberry32(seed) {
+      let a = seed >>> 0;
+      return function () {
+        a |= 0;
+        a = (a + 0x6d2b79f5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function hexToRgb(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+    function lerpColor(c, target, t) {
+      return {
+        r: Math.round(c.r + (target.r - c.r) * t),
+        g: Math.round(c.g + (target.g - c.g) * t),
+        b: Math.round(c.b + (target.b - c.b) * t),
+      };
+    }
+    const rgba = (c, a) => `rgba(${c.r}, ${c.g}, ${c.b}, ${a})`;
+    const BLACK = { r: 0, g: 0, b: 0 };
+    const WHITE = { r: 255, g: 255, b: 255 };
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    function initFloatingBlocks() {
+      const canvas = document.getElementById("bg-canvas");
+      const ctx = canvas.getContext("2d");
+      let blocks = [];
+      let cssW = 0, cssH = 0;
+
+      function buildBlocks() {
+        const rng = mulberry32(42);
+        blocks = [];
+        for (let i = 0; i < 14; i++) {
+          const size = 20 + rng() * 30;
+          const x = rng() * cssW;
+          const y = rng() * cssH;
+          const base = hexToRgb(PALETTE[i % PALETTE.length]);
+          blocks.push({
+            x, y, size,
+            shadow: lerpColor(base, BLACK, 0.35),
+            highlight: lerpColor(base, WHITE, 0.30),
+            fill: base,
+            xFreq: 0.04 + rng() * 0.07,
+            yFreq: 0.03 + rng() * 0.06,
+            rotFreq: 0.02 + rng() * 0.04,
+            xPhase: rng() * 2 * Math.PI,
+            yPhase: rng() * 2 * Math.PI,
+            rotPhase: rng() * 2 * Math.PI,
+            xAmp: 10 + rng() * 14,
+            yAmp: 12 + rng() * 18,
+            baseRotation: rng() * 0.4 - 0.2,
+          });
+        }
+      }
+
+      function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        cssW = window.innerWidth;
+        cssH = window.innerHeight;
+        canvas.width = Math.round(cssW * dpr);
+        canvas.height = Math.round(cssH * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        buildBlocks();
+      }
+
+      const OPACITY = 0.15;
+      function draw(nowMs) {
+        const t = nowMs / 1000;
+        ctx.clearRect(0, 0, cssW, cssH);
+        for (const b of blocks) {
+          const dx = b.xAmp * Math.cos(2 * Math.PI * b.xFreq * t + b.xPhase);
+          const dy = b.yAmp * Math.sin(2 * Math.PI * b.yFreq * t + b.yPhase);
+          const angle =
+            b.baseRotation + 0.15 * Math.sin(2 * Math.PI * b.rotFreq * t + b.rotPhase);
+          const cx = b.x + dx + b.size / 2;
+          const cy = b.y + dy + b.size / 2;
+          const w = b.size, r = w * 0.15;
+
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(angle);
+
+          ctx.fillStyle = rgba(b.shadow, OPACITY);
+          roundRect(ctx, -w / 2, -w / 2, w, w, r);
+          ctx.fill();
+
+          ctx.fillStyle = rgba(b.highlight, OPACITY);
+          roundRect(ctx, -w / 2, -w / 2, w - 1.5, w - 1.5, r);
+          ctx.fill();
+
+          ctx.fillStyle = rgba(b.fill, OPACITY);
+          roundRect(ctx, -w / 2 + 2, -w / 2 + 2, w - 4, w - 4, r * 0.7);
+          ctx.fill();
+
+          ctx.restore();
+        }
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener("resize", resize);
+      resize();
+      requestAnimationFrame(draw);
+    }
+
+    /* ─────────────────────────────────────────────────────────
+     * 5. Boot.
+     * ───────────────────────────────────────────────────────── */
+    const parsed = parseRound();
+    // Language priority: sharer's `lg` from the payload → browser → English.
+    L = I18N[detectLang(parsed.round && parsed.round.lg)] || I18N.en;
+    applyStaticI18n();
+    initFloatingBlocks();
+    if (parsed.round) {
+      render(parsed.round);
+    } else {
+      showEmpty(L[parsed.errorKey]);
+    }
+  </script>
+</body>
+</html>
