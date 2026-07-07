@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delete Account — Yah Blocks</title>
+  <style>
+    :root {
+      --accent:       #5c6bc0;
+      --accent-light: #e8eaf6;
+      --danger:       #d84315;
+      --danger-light: #fbe9e7;
+      --text:         #1a1a2e;
+      --muted:        #6b7280;
+      --border:       #e0e0e0;
+      --bg:           #f8f9fc;
+      --card:         #ffffff;
+      --radius:       12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 16px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #3949ab 0%, #5c6bc0 100%);
+      color: #fff;
+      padding: 56px 24px 40px;
+      text-align: center;
+    }
+    header .app-icon {
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 20px;
+    }
+    header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+    header .subtitle { margin-top: 8px; font-size: 1rem; opacity: .8; }
+
+    .lang-bar {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 18px 24px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    }
+    .lang-btn {
+      padding: 6px 22px;
+      border-radius: 999px;
+      border: 2px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .lang-btn.active,
+    .lang-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .effective-date {
+      text-align: center;
+      color: var(--muted);
+      font-size: .875rem;
+      margin-bottom: 36px;
+    }
+
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .section-card h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--accent-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-card h2 .icon {
+      width: 28px; height: 28px;
+      background: var(--accent-light);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .section-card p { margin-bottom: 12px; color: var(--text); }
+    .section-card p:last-child { margin-bottom: 0; }
+    .section-card ul {
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+    .section-card ul li { margin-bottom: 8px; }
+
+    .highlight {
+      background: var(--accent-light);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      color: #3949ab;
+      font-weight: 500;
+    }
+
+    .warning {
+      background: var(--danger-light);
+      border-left: 4px solid var(--danger);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      color: #bf360c;
+      font-weight: 500;
+    }
+
+    .contact-card {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      background: var(--accent-light);
+      border: 1px solid #c5cae9;
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin: 16px 0;
+    }
+    .contact-card .contact-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+    .contact-card .contact-info strong {
+      display: block;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .contact-card .contact-info a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: .825rem;
+      padding: 32px 24px;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    [data-lang] { display: none; }
+    body.lang-zh [data-lang="zh"] { display: block; }
+    body.lang-en [data-lang="en"] { display: block; }
+
+    body.lang-zh .txt-en { display: none; }
+    body.lang-en .txt-zh { display: none; }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.5rem; }
+      .section-card { padding: 22px 18px; }
+      .contact-card { flex-direction: column; text-align: center; gap: 12px; }
+    }
+  </style>
+</head>
+<body class="lang-zh">
+
+<header>
+  <div class="app-icon">🧩</div>
+  <h1>
+    <span class="txt-zh">账号删除</span>
+    <span class="txt-en">Delete Account</span>
+  </h1>
+  <p class="subtitle">Yah Blocks · 呀方块</p>
+</header>
+
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="setLang('zh')">中文</button>
+  <button class="lang-btn" onclick="setLang('en')">English</button>
+</div>
+
+<main>
+
+  <div data-lang="zh">
+    <p class="effective-date">生效日期：2026 年 7 月 7 日 &nbsp;|&nbsp; 最后更新：2026 年 7 月 7 日</p>
+
+    <div class="section-card">
+      <div class="highlight">
+        本页面用于 Yah Blocks（呀方块）用户请求删除应用账号及与该账号关联的数据。您也可以在应用内发起账号注销。
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📱</span>适用应用</h2>
+      <ul>
+        <li><strong>应用名称：</strong>Yah Blocks（呀方块）</li>
+        <li><strong>开发者：</strong>Miko Studio</li>
+        <li><strong>平台：</strong>Android / iOS / iPadOS</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🧭</span>如何请求删除账号</h2>
+      <p>您可以通过以下任一方式请求删除账号和关联数据：</p>
+      <ul>
+        <li><strong>应用内：</strong>登录 Yah Blocks 后，在账号、设置或个人资料相关页面中使用注销账号/删除账号入口。</li>
+        <li><strong>网页请求：</strong>向以下邮箱发送账号删除请求。请使用与账号相关的邮箱或登录方式，并在邮件中写明“Delete Yah Blocks account”。</li>
+      </ul>
+      <div class="contact-card">
+        <div class="contact-icon">💬</div>
+        <div class="contact-info">
+          <strong>账号删除联系邮箱</strong>
+          <a>fastable#proton.me（发送时请将 # 替换为 @）</a>
+        </div>
+      </div>
+      <p>为帮助我们确认账号，请尽量提供：应用名称、您的账号昵称或账号 ID、登录方式、设备系统、以及您希望删除账号和关联数据的说明。请不要在邮件中发送密码或验证码。</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🗑️</span>删除范围</h2>
+      <p>在验证请求后，我们会删除或匿名化与该 Yah Blocks 账号关联、且我们仍保存的个人信息和应用数据，包括：</p>
+      <ul>
+        <li>账号标识、昵称、头像、登录状态和会话凭证等账号信息</li>
+        <li>服务器端保存的游戏成绩、最高分、累计局数、排行榜记录和奖励领取状态</li>
+        <li>金币余额、待解锁金币、复活记录、活动或任务相关状态等虚拟资产数据</li>
+        <li>与该账号相关的客服沟通记录、问题处理记录和必要的接口日志</li>
+      </ul>
+      <p>删除账号后，您将无法继续使用该账号登录，相关排行榜、金币、奖励、历史记录和在线服务数据可能无法恢复。</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">💾</span>本地数据</h2>
+      <p>设备本地保存的数据，例如本地最高分、音效设置、振动设置、方块样式、语言偏好和您选择的自定义图片文件，通常保存在您的设备上。</p>
+      <p>您可以通过应用内设置、系统应用管理中的清除数据功能，或卸载应用来删除这些本地数据。我们无法远程删除只保存在您设备上的本地文件。</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📌</span>可能保留的数据</h2>
+      <p>在法律法规允许或要求的范围内，我们可能会为了安全、反作弊、争议处理、审计、税务、合规或保护用户与服务安全而保留必要数据。</p>
+      <ul>
+        <li>安全、风控、反作弊和异常行为日志可能保留至完成安全审计或风险处理所需的合理期间。</li>
+        <li>客服、投诉、争议或合规相关记录可能保留至处理完成及适用法律要求的期限。</li>
+        <li>已匿名化或无法再识别到特定用户的数据，可能用于统计、服务改进或合规目的。</li>
+      </ul>
+      <p>除非法律要求更长期间，我们会尽量在不再需要相关数据后删除或匿名化处理。</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">⏱️</span>处理时间</h2>
+      <p>收到您的请求后，我们通常会在合理时间内完成身份核验和处理。一般情况下，我们会在 30 天内完成删除或回复处理进度；如请求复杂、法律要求或安全核验需要更长时间，我们会尽量告知您预计时间。</p>
+      <div class="warning">账号删除是永久操作。提交请求前，请确认您已备份自己需要保留的信息。</div>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🔗</span>相关文档</h2>
+      <ul>
+        <li><a href="privacy-policy.html" style="color: var(--accent);">隐私政策</a> — 了解我们如何处理和保护您的数据</li>
+        <li><a href="terms-of-service.html" style="color: var(--accent);">用户协议</a> — 应用使用条款与条件</li>
+        <li><a href="support.html" style="color: var(--accent);">支持中心</a> — 联系开发者与常见问题</li>
+      </ul>
+    </div>
+  </div>
+
+  <div data-lang="en">
+    <p class="effective-date">Effective Date: July 7, 2026 &nbsp;|&nbsp; Last Updated: July 7, 2026</p>
+
+    <div class="section-card">
+      <div class="highlight">
+        This page lets Yah Blocks users request deletion of their app account and associated data. You can also initiate account deletion inside the App.
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📱</span>App Covered</h2>
+      <ul>
+        <li><strong>App Name:</strong> Yah Blocks</li>
+        <li><strong>Developer:</strong> Miko Studio</li>
+        <li><strong>Platforms:</strong> Android / iOS / iPadOS</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🧭</span>How to Request Account Deletion</h2>
+      <p>You can request deletion of your account and associated data in either of the following ways:</p>
+      <ul>
+        <li><strong>In the App:</strong> After signing in to Yah Blocks, use the cancel account/delete account entry in the account, settings, or profile area.</li>
+        <li><strong>Web request:</strong> Send an account deletion request to the email below. Please use the email or sign-in method associated with your account where possible, and include “Delete Yah Blocks account” in your message.</li>
+      </ul>
+      <div class="contact-card">
+        <div class="contact-icon">💬</div>
+        <div class="contact-info">
+          <strong>Account Deletion Contact</strong>
+          <a>fastable#proton.me (please replace # with @ before sending)</a>
+        </div>
+      </div>
+      <p>To help us identify your account, please include the app name, your account nickname or account ID, sign-in method, device system, and a clear statement that you want to delete your account and associated data. Please do not send passwords or verification codes by email.</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🗑️</span>Data We Delete</h2>
+      <p>After verifying your request, we will delete or anonymize personal information and app data associated with your Yah Blocks account that we still store, including:</p>
+      <ul>
+        <li>Account identifiers, nickname, avatar, sign-in status, session credentials, and related account information</li>
+        <li>Server-side gameplay scores, high scores, round counts, leaderboard records, and reward claim status</li>
+        <li>Coin balance, locked coins, revival records, event or task status, and other virtual asset data</li>
+        <li>Support communications, handling records, and necessary API logs associated with the account</li>
+      </ul>
+      <p>After account deletion, you will no longer be able to sign in with that account, and related leaderboard, coin, reward, history, and online service data may not be recoverable.</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">💾</span>Local Data</h2>
+      <p>Data stored locally on your device, such as local high score, sound settings, haptic settings, block style, language preference, and custom image files you selected, is usually stored on your device.</p>
+      <p>You can delete local data through in-app settings, your system app settings by clearing app data, or by uninstalling the App. We cannot remotely delete files that exist only on your device.</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">📌</span>Data We May Retain</h2>
+      <p>Where permitted or required by law, we may retain necessary data for security, anti-cheat, dispute resolution, audit, tax, compliance, or to protect users and the service.</p>
+      <ul>
+        <li>Security, risk control, anti-cheat, and abnormal behavior logs may be retained for a reasonable period needed to complete security review or risk handling.</li>
+        <li>Support, complaint, dispute, or compliance records may be retained until the matter is resolved and for any period required by applicable law.</li>
+        <li>Aggregated or anonymized data that can no longer identify a specific user may be used for statistics, service improvement, or compliance purposes.</li>
+      </ul>
+      <p>Unless a longer period is required by law, we will delete or anonymize retained data when it is no longer needed.</p>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">⏱️</span>Processing Time</h2>
+      <p>After receiving your request, we will usually complete verification and processing within a reasonable time. In general, we aim to complete deletion or respond with status within 30 days. If the request is complex, legally restricted, or requires additional security verification, we will try to inform you of the expected timing.</p>
+      <div class="warning">Account deletion is permanent. Please make sure you have saved any information you want to keep before submitting your request.</div>
+    </div>
+
+    <div class="section-card">
+      <h2><span class="icon">🔗</span>Related Documents</h2>
+      <ul>
+        <li><a href="privacy-policy.html" style="color: var(--accent);">Privacy Policy</a> — How we handle and protect your data</li>
+        <li><a href="terms-of-service.html" style="color: var(--accent);">Terms of Service</a> — Terms and conditions for use</li>
+        <li><a href="support.html" style="color: var(--accent);">Support</a> — Contact us and common questions</li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <span class="txt-zh">© 2026 Yah Blocks · 呀方块 · 保留所有权利</span>
+    <span class="txt-en">© 2026 Yah Blocks · All Rights Reserved</span>
+  </p>
+  <p style="margin-top:8px;">
+    <a href="privacy-policy.html">
+      <span class="txt-zh">隐私政策</span>
+      <span class="txt-en">Privacy Policy</span>
+    </a>
+    &nbsp;·&nbsp;
+    <a href="terms-of-service.html">
+      <span class="txt-zh">用户协议</span>
+      <span class="txt-en">Terms of Service</span>
+    </a>
+    &nbsp;·&nbsp;
+    <a href="support.html">
+      <span class="txt-zh">支持中心</span>
+      <span class="txt-en">Support</span>
+    </a>
+    &nbsp;·&nbsp;
+    <a href="index.html">
+      <span class="txt-zh">返回首页</span>
+      <span class="txt-en">Home</span>
+    </a>
+  </p>
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.body.className = 'lang-' + lang;
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.title = lang === 'zh' ? '账号删除 — Yah Blocks' : 'Delete Account — Yah Blocks';
+    document.querySelectorAll('.lang-btn').forEach(function(btn) {
+      btn.classList.toggle('active', btn.textContent.trim() === (lang === 'zh' ? '中文' : 'English'));
+    });
+  }
+
+  (function() {
+    var lang = navigator.language || navigator.userLanguage || '';
+    setLang(lang.toLowerCase().startsWith('zh') ? 'zh' : 'en');
+  })();
+</script>
+</body>
+</html>
