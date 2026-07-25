@@ -424,7 +424,7 @@
       <div class="tip">
         <div class="accent"></div>
         <div class="tip-text" data-i18n="tip">
-          <b>小提示</b>：每个榜单结算后，奖励会自动发放到你的账户～盲盒、城市 IP 碎片、待解锁金币都有机会拿，快去冲榜吧！
+          <b>小提示</b>：每个榜单结算后，奖励会自动发放到你的账户，快去冲榜吧！
         </div>
       </div>
     </div>
@@ -476,13 +476,9 @@
         boardMonthTitle: "累计最高分（月）",
         colRank: "排名",
         colReward: "奖励",
-        tip: "<b>小提示</b>：每个榜单结算后，奖励会自动发放到你的账户～盲盒、城市 IP 碎片、待解锁金币都有机会拿，快去冲榜吧！",
+        tip: "<b>小提示</b>：每个榜单结算后，奖励会自动发放到你的账户，快去冲榜吧！",
         statusLoading: "加载中...",
         statusEmpty: "暂无奖励配置",
-        statusError: "奖励加载失败，点击重试",
-        rankOne: "第 {n} 名",
-        rankRange: "第 {a}-{b} 名",
-        rewardKind: { blindbox: "盲盒", shard: "城市 IP 碎片", coins: "待解锁金币" },
       },
       "zh-TW": {
         _lang: "zh-TW",
@@ -518,13 +514,9 @@
         boardMonthTitle: "累計最高分（月）",
         colRank: "排名",
         colReward: "獎勵",
-        tip: "<b>小提示</b>：每個榜單結算後，獎勵會自動發放到你的帳戶～盲盒、城市 IP 碎片、待解鎖金幣都有機會拿，快去衝榜吧！",
+        tip: "<b>小提示</b>：每個榜單結算後，獎勵會自動發放到你的帳戶，快去衝榜吧！",
         statusLoading: "載入中...",
         statusEmpty: "暫無獎勵設定",
-        statusError: "獎勵載入失敗，點擊重試",
-        rankOne: "第 {n} 名",
-        rankRange: "第 {a}-{b} 名",
-        rewardKind: { blindbox: "盲盒", shard: "城市 IP 碎片", coins: "待解鎖金幣" },
       },
       en: {
         _lang: "en",
@@ -562,17 +554,9 @@
         boardMonthTitle: "Cumulative (monthly)",
         colRank: "Rank",
         colReward: "Reward",
-        tip: "<b>Tip</b>: after each board settles, rewards are sent to your account automatically — blind boxes, city IP shards and locked coins are all up for grabs, so go climb the ranks!",
+        tip: "<b>Tip</b>: after each board settles, rewards are sent to your account automatically — so go climb the ranks!",
         statusLoading: "Loading...",
         statusEmpty: "No reward config yet",
-        statusError: "Failed to load rewards. Tap to retry",
-        rankOne: "Rank {n}",
-        rankRange: "Rank {a}–{b}",
-        rewardKind: {
-          blindbox: "Blind Box",
-          shard: "City IP Shard",
-          coins: "Locked Coins",
-        },
       },
     };
 
@@ -642,101 +626,28 @@
     /* ─────────────────────────────────────────────────────────
      * 1. Reward tiers.
      *
-     *    In the app these load live from `api/leshua/block/rank/config`
-     *    (POST { rankType }, rankType 1 = weekly / 2 = monthly) and render with
-     *    the same loading → data / error → retry / empty states. This static
-     *    page reproduces that async flow and its states. The tiers below are
-     *    REPRESENTATIVE samples (grounded in the reward types named in the
-     *    app's own tip copy: blind box / city IP shard / locked coins) — the
-     *    real values come from the backend. The rank/reward labels are built the
-     *    same way the app does (rankLabel / rewardLabel), so they localise from
-     *    the active language pack. Point loadRewardConfig() at the endpoint to
-     *    make it live; the rendering is identical.
+     *    In the app the reward tiers load live from `api/leshua/block/rank/config`
+     *    (POST { rankType }, rankType 1 = weekly / 2 = monthly). That backend is
+     *    the cn (Leshua) ecosystem; the global / globalDev flavours have no
+     *    reward config, so the former native screen showed the "no reward
+     *    config" empty state for both boards. This global page reproduces that:
+     *    it deliberately ships NO concrete tiers and always renders the empty
+     *    state (the cn site keeps its own tiers). Wire loadRewardConfig() to a
+     *    real endpoint if global ever gains its own reward config.
      * ───────────────────────────────────────────────────────── */
-    const REWARD_TIERS = {
-      1: [ // weekly · single best
-        { s: 1, e: 1, kind: "blindbox", n: 3 },
-        { s: 2, e: 2, kind: "blindbox", n: 2 },
-        { s: 3, e: 3, kind: "blindbox", n: 1 },
-        { s: 4, e: 10, kind: "shard", n: 5 },
-        { s: 11, e: 50, kind: "coins", n: 1000 },
-      ],
-      2: [ // monthly · cumulative
-        { s: 1, e: 1, kind: "blindbox", n: 5 },
-        { s: 2, e: 2, kind: "blindbox", n: 3 },
-        { s: 3, e: 3, kind: "blindbox", n: 2 },
-        { s: 4, e: 10, kind: "shard", n: 8 },
-        { s: 11, e: 100, kind: "coins", n: 2000 },
-      ],
-    };
-
-    // Localised labels, mirroring LeaderboardRewardConfig.rankLabel/rewardLabel.
-    function rankLabel(tier) {
-      return tier.s === tier.e
-        ? L.rankOne.replace("{n}", tier.s)
-        : L.rankRange.replace("{a}", tier.s).replace("{b}", tier.e);
-    }
-    function rewardLabel(tier) {
-      return L.rewardKind[tier.kind] + " x" + tier.n;
-    }
-
-    // Swap this for a real fetch to reproduce the live board:
-    //   const res = await fetch(BASE + "/api/leshua/block/rank/config", {
-    //     method: "POST", headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ rankType }) });
-    //   const { data } = await res.json();
-    //   return (data.result?.configList ?? data.configList ?? [])
-    //     .filter(c => c.status === 1 && c.rankType === rankType)
-    //     .sort((a, b) => a.sort - b.sort || a.rankStart - b.rankStart)
-    //     .map(c => ({ s: c.rankStart, e: c.rankEnd, ... }));
-    function loadRewardConfig(rankType) {
-      // Simulate the network round-trip so the loading state is visible,
-      // matching the app's FutureBuilder loading → data transition.
+    function loadRewardConfig() {
+      // Global has no reward config → resolve empty. The short delay keeps the
+      // loading → empty transition the app shows when the backend returns none.
       return new Promise((resolve) => {
-        setTimeout(() => resolve(REWARD_TIERS[rankType] || []), 450);
+        setTimeout(() => resolve([]), 450);
       });
     }
 
-    const REFRESH_ICON =
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" ' +
-      'stroke-linecap="round" stroke-linejoin="round">' +
-      '<polyline points="23 4 23 10 17 10"></polyline>' +
-      '<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>';
-
-    function renderRows(el, tiers) {
-      if (!tiers.length) {
-        el.innerHTML = '<div class="reward-status">' + L.statusEmpty + "</div>";
-        return;
-      }
-      el.innerHTML = tiers
-        .map(function (t) {
-          return (
-            '<div class="reward-row">' +
-            '<div class="col-rank">' + rankLabel(t) + "</div>" +
-            '<div class="col-reward">' + rewardLabel(t) + "</div>" +
-            "</div>"
-          );
-        })
-        .join("");
-    }
-
     function loadBoard(el) {
-      const rankType = Number(el.getAttribute("data-rank-type"));
       el.innerHTML = '<div class="reward-status">' + L.statusLoading + "</div>";
-      loadRewardConfig(rankType).then(
-        function (tiers) {
-          renderRows(el, tiers);
-        },
-        function () {
-          el.innerHTML =
-            '<button type="button" class="reward-retry">' +
-            REFRESH_ICON +
-            "<span>" + L.statusError + "</span></button>";
-          el.querySelector(".reward-retry").addEventListener("click", function () {
-            loadBoard(el);
-          });
-        }
-      );
+      loadRewardConfig().then(function () {
+        el.innerHTML = '<div class="reward-status">' + L.statusEmpty + "</div>";
+      });
     }
 
     // Boot: resolve language, localise static text, then render the boards.
