@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>规则 &amp; 奖励说明 · 呀方块</title>
+  <meta name="description" content="呀方块 · 榜单规则与周榜/月榜奖励说明" />
+  <!-- Social share preview -->
+  <meta property="og:title" content="呀方块 · 规则 & 奖励说明" />
+  <meta property="og:description" content="登录即可上榜，名次越高奖励越好！" />
+  <meta property="og:type" content="website" />
+  <style>
+    /*
+     * 1:1 web replica of the Flutter "规则 & 奖励说明" page
+     * (lib/screens/leaderboard_rules_screen.dart + gameplay_guide/* widgets).
+     *
+     * Colours mirror lib/core/theme/app_colors.dart (AppColors) so the page
+     * matches the app exactly. Kept centralised here as CSS variables instead
+     * of scattering literals through the markup — same approach as record.html.
+     */
+    :root {
+      --bg-grad-top:    #3A4FA8;  /* bgGradientTop */
+      --bg-grad-mid:    #2C3E8C;  /* bgGradientMid */
+      --bg-grad-bottom: #1E2D6A;  /* bgGradientBottom (also gold-pill text) */
+
+      --score-gold:        #FFD54F;  /* scoreGold */
+      --primary-green:     #66BB6A;  /* primaryGreen */
+      --block-green:       #38B84A;  /* blockGreen */
+      --rainbow-blue:      #42A5F5;  /* titleRainbowBlue */
+      --rainbow-violet:    #7E57C2;  /* titleRainbowViolet */
+      --rainbow-amber:     #FFB74D;  /* titleRainbowAmber */
+
+      --white: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--white);
+      /* GameBackground gradient: top → mid → bottom (topCenter→bottomCenter).
+         Pinned to the viewport (fixed, no-repeat) so a page taller than one
+         screen shows a single continuous gradient — otherwise the gradient
+         tiles per-viewport and a bright seam appears mid-page. */
+      background: linear-gradient(
+        to bottom,
+        var(--bg-grad-top) 0%,
+        var(--bg-grad-mid) 50%,
+        var(--bg-grad-bottom) 100%
+      ) no-repeat fixed;
+      min-height: 100%;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Floating decorative blocks sit behind everything (ports FloatingBlocks). */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100%;
+      padding-top: env(safe-area-inset-top);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Scroll body (no in-page header; the native WebView bar owns the title) ── */
+    .body {
+      flex: 1;
+      padding: 18px 20px 28px;
+    }
+
+    /* ── Card (GameplayGuideSection): margin-bottom 14, padding 16, radius 16 ── */
+    .card {
+      margin-bottom: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);          /* white 4% fill */
+      border: 1px solid rgba(255, 255, 255, 0.06);    /* white 6% border */
+    }
+    /* highlight variant (intro card): green→blue diagonal tint + green border */
+    .card.highlight {
+      background: linear-gradient(
+        to bottom right,
+        rgba(102, 187, 106, 0.122),   /* 0x1F66BB6A */
+        rgba(66, 165, 245, 0.102)     /* 0x1A42A5F5 */
+      );
+      border: 1px solid rgba(102, 187, 106, 0.25);    /* green 25% */
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .card-head .chip {
+      width: 30px;
+      height: 30px;
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.06);
+      font-size: 16px;
+      line-height: 1;
+    }
+    .card-head .title {
+      margin-left: 9px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--white);
+    }
+
+    /* ── Rules card body ─────────────────────────────────── */
+    .rules-intro {
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 13.5px;
+      line-height: 1.7;
+    }
+    .rules-intro .gold {
+      color: var(--score-gold);
+      font-weight: 700;
+    }
+
+    /* one rule line: coloured board pill + description */
+    .rule-row {
+      display: flex;
+      align-items: flex-start;
+      padding: 11px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    /* first row has no divider; tighter top pad (Flutter: top 4 vs 11) */
+    .rule-row.first {
+      padding-top: 4px;
+      border-top: none;
+    }
+    /* small gap before the first rule row (SizedBox height:6 after intro) */
+    .rules-intro + .rule-row { margin-top: 6px; }
+
+    .rule-row .pill {
+      flex: none;
+      margin-top: 1px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+      color: var(--white);
+    }
+    .pill-total  { background: linear-gradient(to right, var(--rainbow-blue), var(--rainbow-violet)); }
+    .pill-week   { background: linear-gradient(to right, var(--primary-green), var(--block-green)); }
+    .pill-month  {
+      background: linear-gradient(to right, var(--score-gold), var(--rainbow-amber));
+      color: var(--bg-grad-bottom);   /* dark text on gold, matches app */
+    }
+    .rule-row .desc {
+      margin-left: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.80);
+    }
+    .rule-row .desc b {
+      color: var(--white);
+      font-weight: 800;
+    }
+    .rules-intro b {
+      color: var(--white);
+      font-weight: 700;
+    }
+
+    /* fair-play / enforcement note inside the 上榜要求 card */
+    .fairplay {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .fairplay p {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 12.5px;
+      line-height: 1.75;
+    }
+    .fairplay p + p { margin-top: 8px; }
+    .fairplay b { color: var(--white); font-weight: 800; }
+    .fairplay .warn { color: var(--score-gold); font-weight: 700; }
+
+    /* ── Reward board (GameplayGuideRewardBoard) ─────────── */
+    .reward-board { padding-top: 12px; }
+    .reward-board .board-label {
+      display: flex;
+      align-items: center;
+      padding-left: 2px;
+      margin-bottom: 8px;
+    }
+    .reward-board .board-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      background: linear-gradient(to right, var(--score-gold), var(--rainbow-amber));
+      color: var(--bg-grad-bottom);
+    }
+    .reward-board .board-title {
+      margin-left: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--white);
+    }
+
+    .reward-table {
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.20);   /* black 20% */
+    }
+    .reward-head {
+      display: flex;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .reward-head .col-rank,
+    .reward-row .col-rank {
+      width: 90px;
+      flex: none;
+    }
+    .reward-head .col-rank,
+    .reward-head .col-reward {
+      font-size: 12px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.80);
+    }
+    .reward-row {
+      display: flex;
+      padding: 8px 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .reward-row .col-rank {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.70);
+    }
+    .reward-row .col-reward {
+      font-size: 12px;
+      color: var(--white);
+    }
+
+    /* loading / error / empty status row (mirrors _statusRow) */
+    .reward-status {
+      padding: 10px 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.60);
+    }
+    .reward-retry {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 8px 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      background: none;
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+      width: 100%;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.75);
+      font-family: inherit;
+    }
+    .reward-retry svg { width: 15px; height: 15px; }
+
+    /* ── Tip callout (blue) ──────────────────────────────── */
+    .tip {
+      display: flex;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(66, 165, 245, 0.12);          /* rainbowBlue 12% */
+      border: 1px solid rgba(66, 165, 245, 0.25);    /* rainbowBlue 25% */
+    }
+    .tip .accent {
+      width: 3px;
+      flex: none;
+      background: var(--rainbow-blue);
+    }
+    .tip .tip-text {
+      padding: 13px 15px 13px 13px;
+      font-size: 13px;
+      line-height: 1.65;
+      color: rgba(255, 255, 255, 0.75);
+    }
+    .tip .tip-text b {
+      color: var(--rainbow-blue);
+      font-weight: 800;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="page">
+    <!-- No in-page header/title: the app opens this inside a native WebView
+         whose top bar already shows the localized "规则 & 奖励说明" title. -->
+    <div class="body">
+      <!-- ── 榜单规则 (rulesCard, highlight) ── -->
+      <section class="card highlight">
+        <div class="card-head">
+          <div class="chip">🏆</div>
+          <div class="title" data-i18n="rulesCardTitle">榜单规则</div>
+        </div>
+        <p class="rules-intro" data-i18n="rulesIntro">
+          登录后即可上榜，共 <span class="gold">3 个榜单</span>，名次越高奖励越好：
+        </p>
+
+        <div class="rule-row first">
+          <span class="pill pill-total" data-i18n="pillTotal">总排名</span>
+          <span class="desc" data-i18n="ruleTotal"><b>历史单局最高分</b>排名，记录你最高光的一局，长期有效。</span>
+        </div>
+        <div class="rule-row">
+          <span class="pill pill-week" data-i18n="pillWeek">周榜</span>
+          <span class="desc" data-i18n="ruleWeek"><b>单场最高分（周）</b>：本周内任意一局的最高分，每周结算一次并发放奖励。</span>
+        </div>
+        <div class="rule-row">
+          <span class="pill pill-month" data-i18n="pillMonth">月榜</span>
+          <span class="desc" data-i18n="ruleMonth"><b>累计最高分（月）</b>：本月内的累计得分，每月结算一次并发放奖励。</span>
+        </div>
+      </section>
+
+      <!-- ── 上榜要求 (eligibility) ── -->
+      <section class="card">
+        <div class="card-head">
+          <div class="chip">📅</div>
+          <div class="title" data-i18n="eligCardTitle">上榜要求</div>
+        </div>
+        <p class="rules-intro" data-i18n="eligIntro">
+          各榜单的统计时段与上榜要求如下，涉及时间均以<b>服务器时间</b>为准：
+        </p>
+
+        <div class="rule-row first">
+          <span class="pill pill-week" data-i18n="pillWeek">周榜</span>
+          <span class="desc" data-i18n="eligWeek"><b>统计时段：</b>自每周一 00:00:00 起，至当周周日 23:59:59 止（首尾时间均含）。</span>
+        </div>
+        <div class="rule-row">
+          <span class="pill pill-month" data-i18n="pillMonth">月榜</span>
+          <span class="desc" data-i18n="eligMonth"><b>统计时段：</b>自每月 1 日 00:00:00 起，至当月最后一日 23:59:59 止（首尾时间均含）。</span>
+        </div>
+        <div class="rule-row">
+          <span class="pill pill-total" data-i18n="pillTotal">总排名</span>
+          <span class="desc" data-i18n="eligTotal"><b>统计时段：</b>不限时段，长期有效。</span>
+        </div>
+
+        <div class="fairplay">
+          <p data-i18n="fairplay1">
+            上述榜单成绩均须在对应时段内、以<b>正常方式</b>游戏取得；
+            <span class="warn">不得通过外挂、脚本、篡改数据、恶意刷分等任何作弊或违规手段参与游戏</span>。
+          </p>
+          <p data-i18n="fairplay2">
+            官方有权对通过作弊或其他违规手段进行游戏的玩家及其获得的分数、奖励等进行处罚，
+            处罚方式包括但不限于分数清零、取消上榜资格、收回已发放奖励、限制功能直至封禁账号。
+          </p>
+        </div>
+      </section>
+
+      <!-- ── 周榜奖励 (rewardCard) ── -->
+      <section class="card">
+        <div class="card-head">
+          <div class="chip">🎁</div>
+          <div class="title" data-i18n="rewardWeekCardTitle">周榜奖励</div>
+        </div>
+        <div class="reward-board">
+          <div class="board-label">
+            <span class="board-pill" data-i18n="pillWeek">周榜</span>
+            <span class="board-title" data-i18n="boardWeekTitle">单场最高分（周）</span>
+          </div>
+          <div class="reward-table">
+            <div class="reward-head">
+              <div class="col-rank" data-i18n="colRank">排名</div>
+              <div class="col-reward" data-i18n="colReward">奖励</div>
+            </div>
+            <div class="reward-body" data-rank-type="1"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 月榜奖励 (rewardCard) ── -->
+      <section class="card">
+        <div class="card-head">
+          <div class="chip">🎁</div>
+          <div class="title" data-i18n="rewardMonthCardTitle">月榜奖励</div>
+        </div>
+        <div class="reward-board">
+          <div class="board-label">
+            <span class="board-pill" data-i18n="pillMonth">月榜</span>
+            <span class="board-title" data-i18n="boardMonthTitle">累计最高分（月）</span>
+          </div>
+          <div class="reward-table">
+            <div class="reward-head">
+              <div class="col-rank" data-i18n="colRank">排名</div>
+              <div class="col-reward" data-i18n="colReward">奖励</div>
+            </div>
+            <div class="reward-body" data-rank-type="2"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 小提示 (tip) ── -->
+      <div class="tip">
+        <div class="accent"></div>
+        <div class="tip-text" data-i18n="tip">
+          <b>小提示</b>：每个榜单结算后，奖励会自动发放到你的账户～盲盒、城市 IP 碎片、待解锁金币都有机会拿，快去冲榜吧！
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    /* ─────────────────────────────────────────────────────────
+     * 0. i18n — Simplified Chinese / Traditional Chinese / English.
+     *    Language priority: `?lg=` on the URL (the app passes the in-app
+     *    language, e.g. zh-CN / zh-TW / en) → saved `yb_lang` (shared with the
+     *    other site pages) → browser language → English. Anything that isn't
+     *    zh/en falls back to English. Values may carry inline markup and are
+     *    applied via innerHTML.
+     * ───────────────────────────────────────────────────────── */
+    const I18N = {
+      "zh-CN": {
+        _lang: "zh-CN",
+        title: "规则 & 奖励说明 · 呀方块",
+        metaDesc: "呀方块 · 榜单规则与周榜/月榜奖励说明",
+        ogTitle: "呀方块 · 规则 & 奖励说明",
+        ogDesc: "登录即可上榜，名次越高奖励越好！",
+        rulesCardTitle: "榜单规则",
+        rulesIntro:
+          '登录后即可上榜，共 <span class="gold">3 个榜单</span>，名次越高奖励越好：',
+        pillTotal: "总排名",
+        pillWeek: "周榜",
+        pillMonth: "月榜",
+        ruleTotal: "<b>历史单局最高分</b>排名，记录你最高光的一局，长期有效。",
+        ruleWeek:
+          "<b>单场最高分（周）</b>：本周内任意一局的最高分，每周结算一次并发放奖励。",
+        ruleMonth:
+          "<b>累计最高分（月）</b>：本月内的累计得分，每月结算一次并发放奖励。",
+        eligCardTitle: "上榜要求",
+        eligIntro: "各榜单的统计时段与上榜要求如下，涉及时间均以<b>服务器时间</b>为准：",
+        eligWeek:
+          "<b>统计时段：</b>自每周一 00:00:00 起，至当周周日 23:59:59 止（首尾时间均含）。",
+        eligMonth:
+          "<b>统计时段：</b>自每月 1 日 00:00:00 起，至当月最后一日 23:59:59 止（首尾时间均含）。",
+        eligTotal: "<b>统计时段：</b>不限时段，长期有效。",
+        fairplay1:
+          '上述榜单成绩均须在对应时段内、以<b>正常方式</b>游戏取得；<span class="warn">不得通过外挂、脚本、篡改数据、恶意刷分等任何作弊或违规手段参与游戏</span>。',
+        fairplay2:
+          "官方有权对通过作弊或其他违规手段进行游戏的玩家及其获得的分数、奖励等进行处罚，处罚方式包括但不限于分数清零、取消上榜资格、收回已发放奖励、限制功能直至封禁账号。",
+        rewardWeekCardTitle: "周榜奖励",
+        rewardMonthCardTitle: "月榜奖励",
+        boardWeekTitle: "单场最高分（周）",
+        boardMonthTitle: "累计最高分（月）",
+        colRank: "排名",
+        colReward: "奖励",
+        tip: "<b>小提示</b>：每个榜单结算后，奖励会自动发放到你的账户～盲盒、城市 IP 碎片、待解锁金币都有机会拿，快去冲榜吧！",
+        statusLoading: "加载中...",
+        statusEmpty: "暂无奖励配置",
+        statusError: "奖励加载失败，点击重试",
+        rankOne: "第 {n} 名",
+        rankRange: "第 {a}-{b} 名",
+        rewardKind: { blindbox: "盲盒", shard: "城市 IP 碎片", coins: "待解锁金币" },
+      },
+      "zh-TW": {
+        _lang: "zh-TW",
+        title: "規則 & 獎勵說明 · 呀方塊",
+        metaDesc: "呀方塊 · 榜單規則與週榜/月榜獎勵說明",
+        ogTitle: "呀方塊 · 規則 & 獎勵說明",
+        ogDesc: "登入即可上榜，名次越高獎勵越好！",
+        rulesCardTitle: "榜單規則",
+        rulesIntro:
+          '登入後即可上榜，共 <span class="gold">3 個榜單</span>，名次越高獎勵越好：',
+        pillTotal: "總排名",
+        pillWeek: "週榜",
+        pillMonth: "月榜",
+        ruleTotal: "<b>歷史單局最高分</b>排名，記錄你最高光的一局，長期有效。",
+        ruleWeek:
+          "<b>單場最高分（週）</b>：本週內任意一局的最高分，每週結算一次並發放獎勵。",
+        ruleMonth:
+          "<b>累計最高分（月）</b>：本月內的累計得分，每月結算一次並發放獎勵。",
+        eligCardTitle: "上榜要求",
+        eligIntro: "各榜單的統計時段與上榜要求如下，涉及時間均以<b>伺服器時間</b>為準：",
+        eligWeek:
+          "<b>統計時段：</b>自每週一 00:00:00 起，至當週週日 23:59:59 止（首尾時間均含）。",
+        eligMonth:
+          "<b>統計時段：</b>自每月 1 日 00:00:00 起，至當月最後一日 23:59:59 止（首尾時間均含）。",
+        eligTotal: "<b>統計時段：</b>不限時段，長期有效。",
+        fairplay1:
+          '上述榜單成績均須在對應時段內、以<b>正常方式</b>遊戲取得；<span class="warn">不得透過外掛、腳本、竄改資料、惡意刷分等任何作弊或違規手段參與遊戲</span>。',
+        fairplay2:
+          "官方有權對透過作弊或其他違規手段進行遊戲的玩家及其獲得的分數、獎勵等進行處罰，處罰方式包括但不限於分數清零、取消上榜資格、收回已發放獎勵、限制功能直至封禁帳號。",
+        rewardWeekCardTitle: "週榜獎勵",
+        rewardMonthCardTitle: "月榜獎勵",
+        boardWeekTitle: "單場最高分（週）",
+        boardMonthTitle: "累計最高分（月）",
+        colRank: "排名",
+        colReward: "獎勵",
+        tip: "<b>小提示</b>：每個榜單結算後，獎勵會自動發放到你的帳戶～盲盒、城市 IP 碎片、待解鎖金幣都有機會拿，快去衝榜吧！",
+        statusLoading: "載入中...",
+        statusEmpty: "暫無獎勵設定",
+        statusError: "獎勵載入失敗，點擊重試",
+        rankOne: "第 {n} 名",
+        rankRange: "第 {a}-{b} 名",
+        rewardKind: { blindbox: "盲盒", shard: "城市 IP 碎片", coins: "待解鎖金幣" },
+      },
+      en: {
+        _lang: "en",
+        title: "Rules & Rewards · Yah Blocks",
+        metaDesc: "Yah Blocks · Leaderboard rules and weekly/monthly rewards",
+        ogTitle: "Yah Blocks · Rules & Rewards",
+        ogDesc: "Sign in to rank up — the higher you place, the better the reward!",
+        rulesCardTitle: "Leaderboard Rules",
+        rulesIntro:
+          'Sign in to join the boards. There are <span class="gold">3 leaderboards</span>, and the higher you rank the better the reward:',
+        pillTotal: "Overall",
+        pillWeek: "Weekly",
+        pillMonth: "Monthly",
+        ruleTotal:
+          "<b>All-time single best</b> ranking — it records your finest single game and lasts forever.",
+        ruleWeek:
+          "<b>Single best (weekly)</b>: your top score in any game this week; settled and rewarded once a week.",
+        ruleMonth:
+          "<b>Cumulative (monthly)</b>: your total score this month; settled and rewarded once a month.",
+        eligCardTitle: "Eligibility",
+        eligIntro:
+          "Each board's scoring window and eligibility are as follows; all times are based on <b>server time</b>:",
+        eligWeek:
+          "<b>Window:</b> from Monday 00:00:00 to Sunday 23:59:59 that week (both ends inclusive).",
+        eligMonth:
+          "<b>Window:</b> from the 1st at 00:00:00 to the last day at 23:59:59 that month (both ends inclusive).",
+        eligTotal: "<b>Window:</b> no time limit — valid indefinitely.",
+        fairplay1:
+          'Scores must be earned by <b>playing normally</b> within the relevant window; <span class="warn">cheating or violations of any kind — hacks, scripts, tampering with data, malicious score farming, etc. — are not allowed</span>.',
+        fairplay2:
+          "We reserve the right to penalise players who cheat or otherwise violate the rules, along with the scores and rewards they obtained — including but not limited to resetting scores, disqualifying from the boards, reclaiming granted rewards, restricting features, and up to banning the account.",
+        rewardWeekCardTitle: "Weekly Rewards",
+        rewardMonthCardTitle: "Monthly Rewards",
+        boardWeekTitle: "Single best (weekly)",
+        boardMonthTitle: "Cumulative (monthly)",
+        colRank: "Rank",
+        colReward: "Reward",
+        tip: "<b>Tip</b>: after each board settles, rewards are sent to your account automatically — blind boxes, city IP shards and locked coins are all up for grabs, so go climb the ranks!",
+        statusLoading: "Loading...",
+        statusEmpty: "No reward config yet",
+        statusError: "Failed to load rewards. Tap to retry",
+        rankOne: "Rank {n}",
+        rankRange: "Rank {a}–{b}",
+        rewardKind: {
+          blindbox: "Blind Box",
+          shard: "City IP Shard",
+          coins: "Locked Coins",
+        },
+      },
+    };
+
+    function detectLang(hint) {
+      const norm = (raw) => {
+        if (!raw) return null;
+        if (I18N[raw]) return raw; // exact key, e.g. "zh-CN"
+        const l = String(raw).toLowerCase();
+        if (l.startsWith("zh")) {
+          return l.includes("tw") ||
+            l.includes("hk") ||
+            l.includes("mo") ||
+            l.includes("hant")
+            ? "zh-TW"
+            : "zh-CN";
+        }
+        if (l.startsWith("en")) return "en";
+        return null;
+      };
+      const cands = [hint];
+      try {
+        cands.push(localStorage.getItem("yb_lang"));
+      } catch (e) {
+        /* private mode — ignore */
+      }
+      if (navigator.languages && navigator.languages.length) {
+        cands.push(...navigator.languages);
+      } else {
+        cands.push(navigator.language || "en");
+      }
+      for (const c of cands) {
+        const m = norm(c);
+        if (m) return m;
+      }
+      return "en";
+    }
+
+    // The app appends `?lg=<in-app language>` so the page opens in the same
+    // language the user sees in-app.
+    function urlLang() {
+      try {
+        return new URLSearchParams(location.search).get("lg");
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // Active language pack, assigned at boot.
+    let L;
+
+    function applyStaticI18n() {
+      document.documentElement.lang = L._lang;
+      document.title = L.title;
+      const meta = (sel, val) => {
+        const el = document.querySelector(sel);
+        if (el) el.setAttribute("content", val);
+      };
+      meta('meta[name="description"]', L.metaDesc);
+      meta('meta[property="og:title"]', L.ogTitle);
+      meta('meta[property="og:description"]', L.ogDesc);
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const k = el.getAttribute("data-i18n");
+        if (L[k] != null) el.innerHTML = L[k];
+      });
+    }
+
+    /* ─────────────────────────────────────────────────────────
+     * 1. Reward tiers.
+     *
+     *    In the app these load live from `api/leshua/block/rank/config`
+     *    (POST { rankType }, rankType 1 = weekly / 2 = monthly) and render with
+     *    the same loading → data / error → retry / empty states. This static
+     *    page reproduces that async flow and its states. The tiers below are
+     *    REPRESENTATIVE samples (grounded in the reward types named in the
+     *    app's own tip copy: blind box / city IP shard / locked coins) — the
+     *    real values come from the backend. The rank/reward labels are built the
+     *    same way the app does (rankLabel / rewardLabel), so they localise from
+     *    the active language pack. Point loadRewardConfig() at the endpoint to
+     *    make it live; the rendering is identical.
+     * ───────────────────────────────────────────────────────── */
+    const REWARD_TIERS = {
+      1: [ // weekly · single best
+        { s: 1, e: 1, kind: "blindbox", n: 3 },
+        { s: 2, e: 2, kind: "blindbox", n: 2 },
+        { s: 3, e: 3, kind: "blindbox", n: 1 },
+        { s: 4, e: 10, kind: "shard", n: 5 },
+        { s: 11, e: 50, kind: "coins", n: 1000 },
+      ],
+      2: [ // monthly · cumulative
+        { s: 1, e: 1, kind: "blindbox", n: 5 },
+        { s: 2, e: 2, kind: "blindbox", n: 3 },
+        { s: 3, e: 3, kind: "blindbox", n: 2 },
+        { s: 4, e: 10, kind: "shard", n: 8 },
+        { s: 11, e: 100, kind: "coins", n: 2000 },
+      ],
+    };
+
+    // Localised labels, mirroring LeaderboardRewardConfig.rankLabel/rewardLabel.
+    function rankLabel(tier) {
+      return tier.s === tier.e
+        ? L.rankOne.replace("{n}", tier.s)
+        : L.rankRange.replace("{a}", tier.s).replace("{b}", tier.e);
+    }
+    function rewardLabel(tier) {
+      return L.rewardKind[tier.kind] + " x" + tier.n;
+    }
+
+    // Swap this for a real fetch to reproduce the live board:
+    //   const res = await fetch(BASE + "/api/leshua/block/rank/config", {
+    //     method: "POST", headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({ rankType }) });
+    //   const { data } = await res.json();
+    //   return (data.result?.configList ?? data.configList ?? [])
+    //     .filter(c => c.status === 1 && c.rankType === rankType)
+    //     .sort((a, b) => a.sort - b.sort || a.rankStart - b.rankStart)
+    //     .map(c => ({ s: c.rankStart, e: c.rankEnd, ... }));
+    function loadRewardConfig(rankType) {
+      // Simulate the network round-trip so the loading state is visible,
+      // matching the app's FutureBuilder loading → data transition.
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(REWARD_TIERS[rankType] || []), 450);
+      });
+    }
+
+    const REFRESH_ICON =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" ' +
+      'stroke-linecap="round" stroke-linejoin="round">' +
+      '<polyline points="23 4 23 10 17 10"></polyline>' +
+      '<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>';
+
+    function renderRows(el, tiers) {
+      if (!tiers.length) {
+        el.innerHTML = '<div class="reward-status">' + L.statusEmpty + "</div>";
+        return;
+      }
+      el.innerHTML = tiers
+        .map(function (t) {
+          return (
+            '<div class="reward-row">' +
+            '<div class="col-rank">' + rankLabel(t) + "</div>" +
+            '<div class="col-reward">' + rewardLabel(t) + "</div>" +
+            "</div>"
+          );
+        })
+        .join("");
+    }
+
+    function loadBoard(el) {
+      const rankType = Number(el.getAttribute("data-rank-type"));
+      el.innerHTML = '<div class="reward-status">' + L.statusLoading + "</div>";
+      loadRewardConfig(rankType).then(
+        function (tiers) {
+          renderRows(el, tiers);
+        },
+        function () {
+          el.innerHTML =
+            '<button type="button" class="reward-retry">' +
+            REFRESH_ICON +
+            "<span>" + L.statusError + "</span></button>";
+          el.querySelector(".reward-retry").addEventListener("click", function () {
+            loadBoard(el);
+          });
+        }
+      );
+    }
+
+    // Boot: resolve language, localise static text, then render the boards.
+    L = I18N[detectLang(urlLang())] || I18N.en;
+    applyStaticI18n();
+    document.querySelectorAll(".reward-body").forEach(loadBoard);
+
+    /* ─────────────────────────────────────────────────────────
+     * 2. Floating background blocks — ports lib/widgets/floating_blocks.dart.
+     *    14 blocks, seeded RNG (mulberry32 ≈ Dart Random(42)), Lissajous
+     *    oscillation, opacity 0.15, three rounded layers (shadow / highlight /
+     *    fill). requestAnimationFrame drives time so the motion never resets.
+     *    Verbatim from record.html so both pages share one background.
+     * ───────────────────────────────────────────────────────── */
+    const PALETTE = [
+      "#2EA8E0", "#1B7FCC", "#E8A820", "#E86820", "#38B84A",
+      "#8CC832", "#D83030", "#9838D0", "#E83878", "#20B8A8",
+    ];
+
+    function mulberry32(seed) {
+      let a = seed >>> 0;
+      return function () {
+        a |= 0;
+        a = (a + 0x6d2b79f5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function hexToRgb(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+    function lerpColor(c, target, t) {
+      return {
+        r: Math.round(c.r + (target.r - c.r) * t),
+        g: Math.round(c.g + (target.g - c.g) * t),
+        b: Math.round(c.b + (target.b - c.b) * t),
+      };
+    }
+    const rgba = (c, a) => `rgba(${c.r}, ${c.g}, ${c.b}, ${a})`;
+    const BLACK = { r: 0, g: 0, b: 0 };
+    const WHITE = { r: 255, g: 255, b: 255 };
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    function initFloatingBlocks() {
+      const canvas = document.getElementById("bg-canvas");
+      const ctx = canvas.getContext("2d");
+      let blocks = [];
+      let cssW = 0, cssH = 0;
+
+      function buildBlocks() {
+        const rng = mulberry32(42);
+        blocks = [];
+        for (let i = 0; i < 14; i++) {
+          const size = 20 + rng() * 30;
+          const x = rng() * cssW;
+          const y = rng() * cssH;
+          const base = hexToRgb(PALETTE[i % PALETTE.length]);
+          blocks.push({
+            x, y, size,
+            shadow: lerpColor(base, BLACK, 0.35),
+            highlight: lerpColor(base, WHITE, 0.30),
+            fill: base,
+            xFreq: 0.04 + rng() * 0.07,
+            yFreq: 0.03 + rng() * 0.06,
+            rotFreq: 0.02 + rng() * 0.04,
+            xPhase: rng() * 2 * Math.PI,
+            yPhase: rng() * 2 * Math.PI,
+            rotPhase: rng() * 2 * Math.PI,
+            xAmp: 10 + rng() * 14,
+            yAmp: 12 + rng() * 18,
+            baseRotation: rng() * 0.4 - 0.2,
+          });
+        }
+      }
+
+      function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        cssW = window.innerWidth;
+        cssH = window.innerHeight;
+        canvas.width = Math.round(cssW * dpr);
+        canvas.height = Math.round(cssH * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        buildBlocks();
+      }
+
+      const OPACITY = 0.15;
+      function draw(nowMs) {
+        const t = nowMs / 1000;
+        ctx.clearRect(0, 0, cssW, cssH);
+        for (const b of blocks) {
+          const dx = b.xAmp * Math.cos(2 * Math.PI * b.xFreq * t + b.xPhase);
+          const dy = b.yAmp * Math.sin(2 * Math.PI * b.yFreq * t + b.yPhase);
+          const angle =
+            b.baseRotation + 0.15 * Math.sin(2 * Math.PI * b.rotFreq * t + b.rotPhase);
+          const cx = b.x + dx + b.size / 2;
+          const cy = b.y + dy + b.size / 2;
+          const w = b.size, r = w * 0.15;
+
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(angle);
+
+          ctx.fillStyle = rgba(b.shadow, OPACITY);
+          roundRect(ctx, -w / 2, -w / 2, w, w, r);
+          ctx.fill();
+
+          ctx.fillStyle = rgba(b.highlight, OPACITY);
+          roundRect(ctx, -w / 2, -w / 2, w - 1.5, w - 1.5, r);
+          ctx.fill();
+
+          ctx.fillStyle = rgba(b.fill, OPACITY);
+          roundRect(ctx, -w / 2 + 2, -w / 2 + 2, w - 4, w - 4, r * 0.7);
+          ctx.fill();
+
+          ctx.restore();
+        }
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener("resize", resize);
+      resize();
+      requestAnimationFrame(draw);
+    }
+
+    initFloatingBlocks();
+  </script>
+</body>
+</html>

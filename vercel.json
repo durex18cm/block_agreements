@@ -20,6 +20,7 @@
     { "source": "/terms-of-service", "destination": "/terms-of-service.html" },
     { "source": "/delete-account", "destination": "/delete-account.html" },
     { "source": "/support", "destination": "/support.html" },
+    { "source": "/leaderboard-rules", "destination": "/leaderboard-rules.html" },
     { "source": "/record", "destination": "/api/record" }
   ]
 }
