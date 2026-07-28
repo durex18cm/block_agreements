@@ -72,7 +72,11 @@
       max-width: 480px;
       margin: 0 auto;
       min-height: 100%;
-      padding-top: env(safe-area-inset-top);
+      /* No safe-area padding on purpose: this page is only ever shown below a
+         native title bar, which already clears the status bar. Adding the inset
+         here stacked a second status-bar height on top of the first — invisible
+         in a browser (where the inset resolves to 0) and a wide empty band in
+         the app. A page that owns its own header (record.html) still needs it. */
       display: flex;
       flex-direction: column;
     }
